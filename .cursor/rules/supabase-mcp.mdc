@@ -1,0 +1,13 @@
+---
+description: Always use the vibework Supabase MCP for this project
+alwaysApply: true
+---
+
+# Supabase MCP
+
+For all Supabase work in this repo (schema, SQL, migrations, edge functions, advisors, types, logs, project URL/keys), use **only** the MCP namespace:
+
+- Display name: **vibework supabase**
+- Tool namespace: `user-vibework supabase`
+
+Do **not** use other Supabase MCP connections (e.g. promptsend, shoplook, tongue twisters, or any other project’s Supabase MCP), even if they appear in the available tools list.
