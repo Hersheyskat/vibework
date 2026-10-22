@@ -1,0 +1,120 @@
+{
+  "schema_version": "1.0",
+  "track": "zippy-pm",
+  "day": 3,
+  "id": "zippy-pm-d03",
+  "version": 1,
+  "title": "Size the problem in rupees",
+  "theme": "Leadership speaks money. Turn 'repeat is low' into what it costs and what fixing it is worth.",
+  "duration_minutes": [75, 90],
+  "skills_focus": ["data", "framing", "judgment", "comms"],
+  "practised": [
+    "Building a simple business case from data",
+    "Stating assumptions and a downside case",
+    "Answering a CFO's question with one number",
+    "Writing a forwardable summary"
+  ],
+  "story_so_far": "Day 1: weak repeat comes from bad first orders (on-time clean first orders repeat at 31% vs 6% for late or wrong; worst in Pune and 8–11 am) and from coupon-driven customers (8% repeat vs 25% organic). Pune has many deliveries beyond 3 km; morning prep is 7 minutes vs 3. Aditya's blanket discount is on hold. Day 2: customer interviews found three groups: morning commuters (need reliable speed; price not the issue), grocery households (want Café in the same cart; shared cart is 6+ weeks of work) and coupon hunters (low value). Focus first on morning commuters.",
+  "world_today": "Today is Wednesday of week 1. The CFO, Anita Desai, has asked Meera for the Café numbers before the leadership review.",
+  "canon_after_day": "Agreed numbers: Café loses about ₹82 lakh a month today (−₹2.7 lakh a day). Reaching 30% repeat would add roughly ₹45 lakh a month of contribution per monthly group of new customers, building to about ₹1.1 crore a month at steady state, which would turn Café profitable by roughly ₹30 lakh a month. Fixing first orders (extra morning staff about ₹14 lakh a month; a Pune 3 km radius cap that saves about ₹17 lakh a month) roughly pays for itself. Anita agrees Café is worth fixing for now, but wants a clear go or no-go at the leadership review.",
+  "public": {
+    "inbox": [
+      {"from": "meera", "time": "09:03", "subject": "Anita wants the numbers",
+       "body": "Anita (our CFO) asked me a fair question: is fixing Café worth it, in rupees? Today, build the case. Roughly:\n\n1. What does Café lose today?\n2. What would hitting 30% repeat be worth?\n3. What do the fixes we're discussing cost?\n4. What if we only get halfway?\n\nState your assumptions. Rough and right beats precise and wrong. Lakshmi, Sana and Anita can help. Send the case to Anita, and send me a five-line version I can forward.\n\nMeera"}
+    ],
+    "dashboard": {
+      "title": "Café numbers",
+      "subtitle": "First 8 weeks. Margin per order includes each kitchen's share of fixed costs.",
+      "columns": ["Metric", "Bengaluru", "Pune", "Both"],
+      "rows": [
+        {"cells": ["Orders per day", "9,800", "3,100", "12,900"]},
+        {"cells": ["Margin per order", "−₹18", "−₹31", "—"], "miss": true},
+        {"cells": ["First-time customers (8 weeks)", "1,60,000", "52,000", "2,12,000"]},
+        {"cells": ["30-day repeat rate", "16%", "10%", "14%"], "miss": true},
+        {"cells": ["Orders using a discount", "62%", "71%", "64%"], "miss": true},
+        {"cells": ["Kitchens", "42", "18", "60"]}
+      ],
+      "notes": ["Target: 30% repeat and break-even margin."]
+    },
+    "reviews": [],
+    "documents": [
+      {"title": "Business case outline", "body": "Today's loss · Value of hitting the target · Cost of the fixes · Downside case · Assumptions · Recommendation"}
+    ]
+  },
+  "characters": [
+    {"id": "meera", "available": "start",
+     "opener": "Numbers day! Anita is sharp but fair. Show your assumptions.",
+     "today": "Nudge the player to state assumptions and a downside case. Don't do the maths for them.",
+     "hidden_facts": []},
+    {"id": "lakshmi", "available": "start",
+     "opener": "Morning! Money day, I hear. Precise questions, up to 25 pulls today.",
+     "limits": {"data_pulls": 25},
+     "reply_flags": ["returned_data"],
+     "today": "You hold the unit numbers below.",
+     "hidden_facts": [
+       {"id": "contribution", "fact": "Contribution per order before kitchen fixed costs: a full-price order adds about +₹55; the average discounted order about −₹10; a 50%-off order about −₹45.", "reveal_if": "Asked for contribution, profit or margin per order before fixed costs, or by full price vs discount"},
+       {"id": "repeater-behaviour", "fact": "Customers who repeat place about 6 Café orders a month, 85% at full price, average order ₹235. That is about +₹45 contribution per repeat order.", "reveal_if": "Asked how often repeat customers order, what they spend, or their value"},
+       {"id": "repeater-retention", "fact": "60% of repeat customers are still ordering the following month.", "reveal_if": "Asked about retention of repeat customers month to month, or how long they stay"},
+       {"id": "monthly-new", "fact": "About 1,06,000 new first-time Café customers a month across both cities.", "reveal_if": "Asked for new or first-time customers per month"},
+       {"id": "pune-far-orders", "fact": "Pune orders from beyond 3 km (35% of Pune orders, about 1,085 a day) each lose about ₹52 after refunds and coupons.", "reveal_if": "Asked about the economics of far or 3 km+ deliveries in Pune"}
+     ]},
+    {"id": "sana", "available": "start",
+     "opener": "Hi! If you need costs for kitchens or staff, ask me.",
+     "today": "Share operating costs when asked.",
+     "hidden_facts": [
+       {"id": "staff-cost", "fact": "Fixing the morning rush needs about 2 extra staff 7–11 am in all 18 Pune kitchens and the 20 busiest Bengaluru kitchens: 76 people at about ₹18,000 a month each, roughly ₹13.7 lakh a month.", "reveal_if": "Asked what it costs to fix the morning rush or add staff"},
+       {"id": "kitchen-fixed", "fact": "Each kitchen costs about ₹2.2 lakh a month fixed (staff, rent, equipment lease), so about ₹1.32 crore a month for all 60.", "reveal_if": "Asked about kitchen fixed costs"}
+     ]},
+    {"id": "anita", "available": "start",
+     "opener": "Hi, Anita here. Meera says you're building the Café case. I want one number for today's loss, one for the upside, and the downside. Ping me if you need finance inputs.",
+     "today": "You are the audience for the case. Answer finance questions briefly. When the case arrives, react to it.",
+     "hidden_facts": [
+       {"id": "exit-cost", "fact": "Shutting Café would cost about ₹1.5 crore one-time (kitchen leases, equipment, notice pay).", "reveal_if": "Asked what shutting Café would cost"},
+       {"id": "grocery-uplift", "fact": "Café customers who also buy groceries spend about 8% more on groceries than similar non-Café customers.", "reveal_if": "Asked whether Café affects grocery spending or its strategic value"}
+     ]},
+    {"id": "aditya", "available": "start", "opener": "Hey! Heard you're doing numbers 😅 Don't forget growth has a value too!", "today": "Light touch today. If asked, say awareness campaigns cost about ₹40 lakh and you can't promise the repeat rate.", "hidden_facts": []},
+    {"id": "karthik", "available": "start", "opener": "Hi. Ping me if you need effort estimates for anything.", "today": "Effort only: radius change and menu changes 2–3 days; shared cart 6+ weeks.", "hidden_facts": []}
+  ],
+  "group_chats": [],
+  "tasks": [
+    {"id": "t1", "title": "Gather the inputs", "minutes": 25, "kind": "chat",
+     "description": "Get the numbers you need from Lakshmi, Sana and Anita. Ask precise questions.",
+     "done_when": {"counter_at_least": {"counter": "lakshmi.data_pulls", "value": 2}}},
+    {"id": "t2", "title": "Business case to Anita", "minutes": 30, "kind": "submission", "submit_to": "anita",
+     "description": "Today's loss; the value of hitting 30% repeat; the cost of the fixes; a downside case if repeat only reaches about 20%; your assumptions; your recommendation.",
+     "done_when": {"submitted": "t2"}},
+    {"id": "t3", "title": "Handle the twist", "minutes": 10, "kind": "chat",
+     "description": "Something will land in your messages during the day. Deal with it.",
+     "done_when": {"trigger_fired": "twist-answered"}},
+    {"id": "t4", "title": "Five-line summary for Meera", "minutes": 10, "kind": "submission", "submit_to": "meera",
+     "description": "Five lines Meera can forward to leadership unchanged.",
+     "done_when": {"submitted": "t4"}}
+  ],
+  "triggers": [
+    {"id": "twist", "when": {"counter_at_least": {"counter": "lakshmi.data_pulls", "value": 3}},
+     "do": [{"message": {"from": "anita", "text": "Quick one before your case lands. If we shut Café tomorrow, what do we save, and what do we lose? One number each, please."}}]},
+    {"id": "twist-answered", "when": {"all": [{"trigger_fired": "twist"}, {"messages_sent": {"to": "anita", "at_least": 1}}]}, "do": []},
+    {"id": "anita-on-case", "when": {"submitted": "t2"},
+     "do": [{"open": "chat:anita"}, {"ai_reply": {"from": "anita", "direction": "React to the business case in 2–3 lines: name the weakest assumption and ask what happens if it's wrong."}}]},
+    {"id": "meera-on-summary", "when": {"submitted": "t4"},
+     "do": [{"ai_reply": {"from": "meera", "direction": "Say whether you could forward the summary as-is. If not, name the one line to fix."}}]}
+  ],
+  "clock": {"start": "09:00", "end": "17:30", "steps": [
+    {"when": {"counter_at_least": {"counter": "lakshmi.data_pulls", "value": 2}}, "time": "11:00"},
+    {"when": {"trigger_fired": "twist"}, "time": "12:30"},
+    {"when": {"submitted": "t2"}, "time": "15:30"},
+    {"when": {"submitted": "t4"}, "time": "17:30"}
+  ]},
+  "scoring": {
+    "strong_player": "Computes today's loss from the dashboard (about ₹2.7 lakh a day, ₹82 lakh a month); gets repeater value, retention and contribution from Lakshmi; sizes the upside as roughly ₹45 lakh a month per monthly group of customers building to about ₹1.1 crore a month; includes fix costs and the Pune radius saving; shows a downside case; states assumptions; answers Anita's shut-down question with both the saving and what is lost; writes a five-line summary that leads with the answer.",
+    "expected_answers": {
+      "t1": "Precise asks: contribution per order before fixed costs (full price vs discounted); how often repeat customers order and at what price; how many repeaters keep ordering next month; new customers per month; cost of extra morning staff; economics of Pune orders beyond 3 km.",
+      "t2": "Today: about −₹2.7 lakh a day (9,800 × −₹18 + 3,100 × −₹31), or about −₹82 lakh a month. Upside: 30% instead of 14% repeat on about 1,06,000 new customers a month is about 17,000 extra repeat customers per month; × 6 orders × ₹45 is about ₹45 lakh a month from each monthly group; with 60% staying each month this builds to about ₹1.1 crore a month, so Café turns roughly +₹30 lakh a month. Fixes: extra morning staff about ₹14 lakh a month; capping Pune at 3 km removes about 1,085 orders a day that each lose ₹52, saving about ₹17 lakh a month, so the fixes roughly pay for themselves. Downside at 20% repeat: about 6,400 extra repeaters a month, building to roughly ₹43 lakh a month, so still about ₹40 lakh a month of loss. Recommendation: fix first orders now; set a go or no-go at the leadership review based on early repeat signals.",
+      "t3": "Shutting Café saves about ₹82 lakh a month of losses but costs about ₹1.5 crore one-time, and loses the upside (about +₹30 lakh a month if fixed) plus the roughly 8% higher grocery spend of Café customers. Shutting now gives up the option before the cheap fixes are tested.",
+      "t4": "Five lines, answer first: Café loses about ₹82 lakh a month today. The main cause is failed first orders, which are cheap to fix. At 30% repeat it would make about ₹30 lakh a month. Fixes cost about ₹14 lakh a month and the Pune radius cap saves about ₹17 lakh. Recommend: fix now; decide go or no-go at the leadership review."
+    },
+    "common_mistakes": ["Only qualitative arguments, no rupees", "Precise-looking numbers with no assumptions", "No downside case", "Answering 'shut it down' with only the saving", "A summary that starts with background instead of the answer"],
+    "senior_view": "A senior PM would do the loss from the dashboard in two minutes, ask Lakshmi three precise questions to value a repeat customer, and put the case on one page: today, upside, cost, downside, assumptions. They'd answer Anita's shut-down question with both sides and frame the review as a go or no-go with a clear threshold.",
+    "drill": "Size one thing in ten minutes: if 1,000 more customers each placed 6 orders a month at ₹45 contribution, what is that per month and per year? Write the assumptions underneath."
+  }
+}

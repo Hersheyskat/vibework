@@ -1,0 +1,121 @@
+{
+  "schema_version": "1.0",
+  "track": "zippy-pm",
+  "day": 9,
+  "id": "zippy-pm-d09",
+  "version": 1,
+  "title": "Launch-day crisis",
+  "theme": "The pilot is live, and things are breaking. Find the cause, keep calm, keep the test alive.",
+  "duration_minutes": [75, 90],
+  "skills_focus": ["judgment", "framing", "comms", "data"],
+  "practised": [
+    "Finding the root cause before acting",
+    "Choosing a fix over a full rollback",
+    "Giving short, regular updates under pressure",
+    "Handling a public complaint without panic discounts",
+    "Writing an incident note"
+  ],
+  "story_so_far": "The First Order Promise pilot went live today (Thursday) at 8 am in 9 of Pune's 18 kitchens, as a test: kitchens were paired by volume and far-order share and one of each pair got the Promise. Treatment kitchens have the 3 km cap, the 12-item Fast Lane morning menu, a +3 min morning ETA buffer, the quality checklist with stickers, new morning staff, and manual ₹50 credits for late or wrong first orders. Primary metric: 7-day repeat of first-time customers; Friday's review can only see first-day signals. The leadership review is tomorrow.",
+  "world_today": "Today is Thursday of week 2, launch day. Treatment kitchens: Wakad, Hinjewadi, Baner, Aundh, Kothrud, Viman Nagar, Hadapsar, Pimple Saudagar, Shivajinagar. Control kitchens include Kharadi.",
+  "canon_after_day": "Root cause: a typo set the morning ETA buffer to +13 minutes instead of +3 in 4 treatment kitchens (Wakad, Hinjewadi, Baner, Aundh) from 8:00 to about 10:15; it was fixed in about 20 minutes once found. Data from those 4 kitchens for 8:00–10:15 is excluded and enrolment is extended by half a day. Kothrud's espresso machine was down 9:15–13:00 (logged as noise). The influencer's cold coffee came from a control kitchen (Kharadi) 6.2 km away at 7:55 am, before launch; it was handled with a direct apology and a credit, with no blanket discount. Day-one results, excluding the bad window: first-order on-time 88% treatment vs 55% control; first-order complaints 4% vs 12%; orders per kitchen 28% lower in treatment (mostly the radius cap); ₹19,000 of credits issued. New rule: two people check every config change before rollout.",
+  "public": {
+    "inbox": [
+      {"from": "meera", "time": "08:05", "subject": "We're live!",
+       "body": "Pilot is live in 9 Pune kitchens. Keep an eye on things today. Send me a short update every couple of hours. If anything goes wrong, tell me early, not perfectly.\n\nMeera"}
+    ],
+    "dashboard": {
+      "title": "Launch monitor · 09:45",
+      "subtitle": "Live since 08:00. Treatment = Promise kitchens.",
+      "columns": ["Since 8 am", "Treatment (9)", "Control (9)"],
+      "rows": [
+        {"cells": ["Orders", "610", "1,040"], "miss": true},
+        {"cells": ["Checkout abandon rate", "48%", "21%"], "miss": true},
+        {"cells": ["Support tickets", "64", "22"], "miss": true},
+        {"cells": ["Credits issued", "₹1,200", "—"]}
+      ],
+      "notes": ["Expected: treatment orders roughly 30% lower than control because of the radius cap."]
+    },
+    "reviews": [],
+    "documents": []
+  },
+  "characters": [
+    {"id": "meera", "available": "start",
+     "opener": "Live! How's it looking? Short updates please, every couple of hours.",
+     "today": "You want short, regular updates: what's happening, what we're doing, what's next. If the player goes quiet for a long time during the incident, nudge once. Don't solve the incident for them.",
+     "hidden_facts": []},
+    {"id": "farhan", "available": "start",
+     "opener": "Farhan from support here. Morning team is ready for the manual credits. I'll flag anything odd.",
+     "today": "You report what the support queue says. You need clear instructions on what to tell customers.",
+     "hidden_facts": [
+       {"id": "tickets-eta", "fact": "Most treatment tickets say the app showed 23 minutes, so customers cancelled. They come from Wakad, Hinjewadi, Baner and Aundh.", "reveal_if": "Asked what the tickets say or where they come from"},
+       {"id": "influencer-order", "fact": "The influencer's order came from the Kharadi kitchen (a control kitchen) at 7:55 am, 6.2 km away, before the pilot started.", "reveal_if": "Asked to look up the influencer's order"}
+     ]},
+    {"id": "lakshmi", "available": "start",
+     "opener": "Hi! I'm watching the launch numbers. Ask me anything precise.",
+     "limits": {"data_pulls": 25},
+     "reply_flags": ["returned_data"],
+     "today": "You can break numbers down by kitchen and time. Reveal day-one results only late in the day or after the fix.",
+     "hidden_facts": [
+       {"id": "drop-by-kitchen", "fact": "The abandon spike is only in 4 treatment kitchens: Wakad, Hinjewadi, Baner, Aundh (about 70% abandon). The other 5 treatment kitchens look normal (about 22%).", "reveal_if": "Asked to break the drop or abandon rate down by kitchen"},
+       {"id": "day-one", "fact": "Day-one results excluding the 8:00–10:15 window in the 4 affected kitchens: first-order on-time 88% treatment vs 55% control; first-order complaints 4% vs 12%; orders per kitchen 28% lower in treatment; credits ₹19,000.", "reveal_if": "Asked for end-of-day or day-one results after the fix"}
+     ]},
+    {"id": "karthik", "available": "start",
+     "opener": "Morning. Rollout went out in two batches, all green on our side.",
+     "today": "At first you don't know the cause and suggest rolling back the whole pilot to be safe. If the player asks what was different about the affected kitchens or what changed in their config, check and find the typo. Hotfix takes about 20 minutes.",
+     "hidden_facts": [
+       {"id": "typo", "fact": "In rollout batch 2 (Wakad, Hinjewadi, Baner, Aundh), the morning ETA buffer was entered as +13 minutes instead of +3.", "reveal_if": "Asked to check config in the affected kitchens, or what differs between batches"}
+     ]},
+    {"id": "sana", "available": "start",
+     "opener": "Kitchens are humming. Stickers are working!",
+     "today": "Report the Kothrud problem when asked how kitchens are doing, or after your own message.",
+     "hidden_facts": [
+       {"id": "kothrud", "fact": "Kothrud's espresso machine broke at 9:15; a technician arrives around 1 pm. Sana can mark coffee unavailable there.", "reveal_if": "Asked how the kitchens are doing or about any kitchen problems"}
+     ]},
+    {"id": "aditya", "available": "start", "opener": "Launch day!! 🚀", "today": "After your twist message, push for a blanket 50%-off for all Pune users today. Back down if the player explains the order was from a control kitchen before launch, offers a direct response to the influencer, and explains a blanket discount would wreck the test and cost a lot.", "hidden_facts": []}
+  ],
+  "group_chats": [
+    {"id": "war-room", "name": "Launch war room", "members": ["karthik", "sana", "farhan", "lakshmi"], "available": "start",
+     "opener": "Karthik: War room's open for launch day. Ping here if something breaks."}
+  ],
+  "tasks": [
+    {"id": "t1", "title": "Find the cause and fix it", "minutes": 25, "kind": "chat",
+     "description": "Treatment orders are far lower than expected. Find out why before deciding what to do.",
+     "done_when": {"any": [{"messages_sent": {"to": "karthik", "at_least": 3}}, {"messages_sent": {"to": "war-room", "at_least": 3}}]}},
+    {"id": "t2", "title": "Keep Meera updated", "minutes": 10, "kind": "chat",
+     "description": "Short updates: what's happening, what we're doing, what's next.",
+     "done_when": {"messages_sent": {"to": "meera", "at_least": 2}}},
+    {"id": "t3", "title": "Handle the twist", "minutes": 15, "kind": "chat",
+     "description": "Something will land in your messages during the day. Deal with it.",
+     "done_when": {"all": [{"trigger_fired": "twist"}, {"messages_sent": {"to": "aditya", "at_least": 1}}]}},
+    {"id": "t4", "title": "Incident note to Meera", "minutes": 20, "kind": "submission", "submit_to": "meera",
+     "description": "What happened, the impact, what we did, what it means for the test, what we'll change so it doesn't happen again, and the day-one results.",
+     "done_when": {"submitted": "t4"}}
+  ],
+  "triggers": [
+    {"id": "alert", "when": {"any": [{"messages_sent": {"to": "meera", "at_least": 1}}, {"messages_sent": {"to": "farhan", "at_least": 1}}, {"messages_sent": {"to": "lakshmi", "at_least": 1}}, {"messages_sent": {"to": "karthik", "at_least": 1}}, {"messages_sent": {"to": "war-room", "at_least": 1}}]},
+     "do": [{"message": {"from": "farhan", "text": "Heads up: tickets are spiking from treatment kitchens. Customers say the app shows a 23-minute ETA, so they're cancelling. What do I tell them?"}}]},
+    {"id": "twist", "when": {"any": [{"messages_sent": {"to": "karthik", "at_least": 3}}, {"messages_sent": {"to": "war-room", "at_least": 3}}]},
+     "do": [{"message": {"from": "aditya", "text": "🚨 Pune food influencer just posted a reel: 'Cold coffee from Zippy Café, never again.' 40k views and climbing. We need to fight back NOW: 50% off for every Pune user today. I can push it in 10 minutes. Go?"}}]},
+    {"id": "meera-on-note", "when": {"submitted": "t4"},
+     "do": [{"ai_reply": {"from": "meera", "direction": "React in 2–3 lines: thank them for a calm day, and ask how they'll explain this incident in tomorrow's review in one sentence."}}]}
+  ],
+  "clock": {"start": "08:00", "end": "18:00", "steps": [
+    {"when": {"trigger_fired": "alert"}, "time": "09:50"},
+    {"when": {"task_done": "t1"}, "time": "10:30"},
+    {"when": {"trigger_fired": "twist"}, "time": "11:15"},
+    {"when": {"task_done": "t2"}, "time": "13:00"},
+    {"when": {"submitted": "t4"}, "time": "18:00"}
+  ]},
+  "scoring": {
+    "strong_player": "Doesn't roll back the whole pilot on instinct; asks Lakshmi to break the drop down by kitchen, sees it's only 4 kitchens, asks Karthik what's different in their config, finds the +13 typo and gets a hotfix; tells Farhan what to say to customers and to credit affected ones; updates Meera briefly and early; asks Farhan to look up the influencer's order (control kitchen, before launch, 6.2 km), responds directly with an apology and credit, refuses the blanket discount (it would wreck the test and cost a lot); logs Kothrud as noise; protects the test by excluding the bad window; proposes a two-person config check; reports the day-one results.",
+    "expected_answers": {
+      "t1": "Break the drop down by kitchen (only Wakad, Hinjewadi, Baner, Aundh), ask what's different about their config (rollout batch 2), find the +13 minute buffer typo, hotfix in about 20 minutes. Tell Farhan to apologise and credit customers who saw the wrong ETA.",
+      "t2": "Early and short: '9:55 – treatment orders down sharply in 4 kitchens, investigating; not rolling back yet.' Then: '10:20 – cause found: ETA buffer typo (+13 instead of +3) in 4 kitchens; fixed; orders recovering; affected customers being credited.'",
+      "t3": "Check the facts first: the order came from a control kitchen 6.2 km away at 7:55 am, before launch. Respond to the influencer directly: apologise, credit her, explain the new on-time promise, and invite her to try it. No blanket 50% off: it would cost a lot, pull coupon-driven customers into both test groups and wreck the test.",
+      "t4": "What: a config typo set the ETA buffer to +13 min in 4 treatment kitchens, 8:00–10:15; checkout abandon rose to about 70% there. Fixed in about 20 minutes once found. Also: Kothrud espresso machine down 9:15–13:00; an influencer complaint traced to a control kitchen before launch. Test impact: exclude those 4 kitchens' 8:00–10:15 data; extend enrolment half a day. Prevention: two-person check on config, and smaller first rollout batches. Day one (clean data): first-order on-time 88% vs 55%; complaints 4% vs 12%; orders per kitchen −28% (mostly the cap); credits ₹19,000."
+    },
+    "common_mistakes": ["Rolling back the entire pilot before finding the cause", "Going silent on Meera during the incident", "Approving the blanket 50% off under pressure", "Responding to the influencer without checking where the order came from", "Forgetting to protect the experiment data", "An incident note that blames someone instead of fixing the process"],
+    "senior_view": "A senior PM stays calm, narrows the problem with data (which kitchens, since when, what changed), fixes the smallest thing, and keeps the test alive. They send short updates early, check the facts before reacting to social media, and end the day with a blameless incident note and a process fix.",
+    "drill": "Think of something that broke recently, at work or at home. Write three updates of no more than two lines each, as if to your boss: at discovery, at diagnosis, at resolution."
+  }
+}

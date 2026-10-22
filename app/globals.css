@@ -1,26 +1,106 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --vw-bg: #0f1218;
+  --vw-sidebar: #151a22;
+  --vw-sidebar-hover: #1e2530;
+  --vw-sidebar-active: #273041;
+  --vw-rail: #0c0f14;
+  --vw-surface: #f3f5f8;
+  --vw-panel: #ffffff;
+  --vw-border: #e2e6ee;
+  --vw-border-strong: #cfd6e2;
+  --vw-text: #121826;
+  --vw-text-muted: #5b6577;
+  --vw-text-faint: #8b95a8;
+  --vw-sidebar-text: #d7dde8;
+  --vw-sidebar-muted: #8b95a8;
+  --vw-accent: #0f9d8a;
+  --vw-accent-soft: #d8f3ee;
+  --vw-accent-deep: #0b7a6b;
+  --vw-warn: #c47b1a;
+  --vw-danger: #c23b3b;
+  --vw-miss: #fff1f0;
+  --vw-shadow: 0 12px 40px rgba(15, 18, 24, 0.08);
+  --background: var(--vw-surface);
+  --foreground: var(--vw-text);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-ibm-plex);
+  --font-mono: var(--font-ibm-plex-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  background: var(--vw-bg);
+  color: var(--vw-text);
+  font-family: var(--font-ibm-plex), "IBM Plex Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--vw-accent) 28%, white);
+}
+
+@keyframes vw-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes vw-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.vw-animate-in {
+  animation: vw-slide-in 0.28s ease both;
+}
+
+.vw-typing span {
+  animation: vw-pulse 1.1s ease-in-out infinite;
+}
+
+.vw-typing span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.vw-typing span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vw-animate-in,
+  .vw-typing span {
+    animation: none;
+  }
 }

@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VibeWork
 
-## Getting Started
+Mobile-friendly workplace simulation. Learners practice a Product Manager role at Zippy Café inside a Slack-style workspace — scripted scenario files, AI colleagues, fair scoring.
 
-First, run the development server:
+See [MVP.md](./MVP.md) for scope. Auth is **Google login only** (no OTP).
+
+## Quick start
 
 ```bash
+npm install
+cp .env.example .env.local
+# add OPENROUTER_API_KEY + Supabase URL/publishable key
+# enable Google provider in Supabase Auth (see MVP.md / below)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) → **Continue with Google** → Start Day 1.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Without an OpenRouter key the app still runs in **demo mode** (scripted fallbacks for chats).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Supabase Google setup
 
-## Learn More
+1. Supabase Dashboard → Authentication → Providers → **Google** → enable
+2. Google Cloud OAuth Web client → Client ID + Secret into Supabase
+3. Redirect URLs:
+   - Supabase callback: `https://<project-ref>.supabase.co/auth/v1/callback` (shown in dashboard)
+   - App Site URL / redirect allow list: `http://localhost:3000` and `http://localhost:3000/auth/callback`
 
-To learn more about Next.js, take a look at the following resources:
+## Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Next.js (App Router) + TypeScript
+- Supabase Auth — Google OAuth only
+- Scenario cartridges in `/scenarios/<track-id>/`
+- OpenRouter for AI (`OPENROUTER_API_KEY`)
+- Day-run state stored under `.data/runs/` (local MVP)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Scenarios
 
-## Deploy on Vercel
+```
+scenarios/zippy-pm/
+  track.json
+  days/day01.json … day10.json
+  SCENARIO_FORMAT.md
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The engine is track-agnostic: add another folder under `scenarios/` for a new company/role.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Scripts
+
+- `npm run dev` — local server
+- `npm run build` — production build
+- `npm run lint` — ESLint

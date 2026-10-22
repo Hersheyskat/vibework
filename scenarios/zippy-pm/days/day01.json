@@ -1,0 +1,132 @@
+{
+  "schema_version": "1.0",
+  "track": "zippy-pm",
+  "day": 1,
+  "id": "zippy-pm-d01",
+  "version": 1,
+  "title": "Diagnose low repeat orders",
+  "theme": "Your first day: find out why customers try Café once and don't come back.",
+  "duration_minutes": [75, 90],
+  "skills_focus": ["framing", "data", "judgment", "comms"],
+  "practised": [
+    "Breaking a vague problem into testable causes",
+    "Asking precise data questions",
+    "Pushing back on a senior colleague",
+    "Writing a short decision note for your boss"
+  ],
+  "story_so_far": "This is the player's first day at Zippy.",
+  "world_today": "Today is Monday of week 1. Leadership reviews Café in three weeks.",
+  "canon_after_day": "By the end of Day 1 the team broadly accepts that weak repeat comes from bad first experiences (late, cold or wrong first orders, worst in Pune and the 8–11 am rush) and from coupon-driven one-time customers. Aditya's blanket 50%-off-second-order campaign is on hold. Meera asks the player to talk to real customers tomorrow before going further.",
+  "public": {
+    "inbox": [
+      {"from": "meera", "time": "09:02", "subject": "Welcome to Zippy, your first problem",
+       "body": "Welcome aboard! Straight to it: people try Café, but they don't come back. Only 14% of first-time customers order again within 30 days. Our target is 30%.\n\nLeadership reviews Café in three weeks and will decide whether to expand it or shut it down. By end of today, send me your first read: what you think is going on, what evidence you have, and what you would do first. Don't try to solve everything today. Show me how you think.\n\nLakshmi from analytics can pull data for you. Ask her precise questions.\n\nMeera"}
+    ],
+    "dashboard": {
+      "title": "Zippy Café dashboard",
+      "subtitle": "First 8 weeks. Red figures miss target.",
+      "columns": ["Metric", "Bengaluru", "Pune", "Target"],
+      "rows": [
+        {"cells": ["Orders per day", "9,800", "3,100", "—"]},
+        {"cells": ["First-time customers", "1,60,000", "52,000", "—"]},
+        {"cells": ["30-day repeat rate", "16%", "10%", "30%"], "miss": true},
+        {"cells": ["Avg delivery time", "14 min", "17 min", "10 min"], "miss": true},
+        {"cells": ["Avg order value", "₹210", "₹185", "₹220"], "miss": true},
+        {"cells": ["Orders using a discount", "62%", "71%", "under 40%"], "miss": true},
+        {"cells": ["Avg rating (of 5)", "4.1", "3.7", "4.3"], "miss": true},
+        {"cells": ["Complaints: cold, wrong, missing", "6%", "11%", "under 3%"], "miss": true},
+        {"cells": ["Margin per order", "−₹18", "−₹31", "break-even"], "miss": true}
+      ],
+      "notes": ["48% of all Café orders arrive between 8 and 11 am."]
+    },
+    "reviews": [
+      {"text": "Coffee was lukewarm by the time it reached me.", "meta": "Pune · ★★"},
+      {"text": "Didn't even know Zippy had a café until I got a 50% off notification.", "meta": "Bengaluru · ★★★★"},
+      {"text": "Morning order took 22 minutes. Missed my standup.", "meta": "Bengaluru · ★★"},
+      {"text": "Sandwich was great. Why can't I add it to my grocery order?", "meta": "Bengaluru · ★★★★"},
+      {"text": "Ordered twice, something was missing both times.", "meta": "Pune · ★"},
+      {"text": "Cold coffee is ₹149 without the coupon. The café near my office is cheaper.", "meta": "Pune · ★★★"}
+    ],
+    "documents": []
+  },
+  "characters": [
+    {"id": "meera", "available": "start",
+     "opener": "Welcome to Zippy! Read my email in your Inbox and look at the dashboard. Send me your first read through the Tasks page when ready. Show me how you think.",
+     "today": "Today you wait for the player's diagnosis and end-of-day note.",
+     "hidden_facts": []},
+    {"id": "lakshmi", "available": "start",
+     "opener": "Hi, Lakshmi here from analytics. Send me precise questions and I'll pull the numbers. I can do up to 25 data pulls for you today; clarifying questions don't count.",
+     "today": "You hold the facts below.",
+     "limits": {"data_pulls": 25},
+     "reply_flags": ["returned_data"],
+     "hidden_facts": [
+       {"id": "first-order-quality", "fact": "Customers whose first order arrived in under 12 minutes with no complaint repeat at 31%. Those with a late (15+ min) or wrong first order repeat at 6%. By city: Bengaluru 32% vs 7%, Pune 28% vs 5%.", "reveal_if": "The player asks for repeat rate split by first-order delivery time, lateness or experience quality"},
+       {"id": "coupon-customers", "fact": "Customers acquired through the 50% coupon repeat at 8%. Those who found Café on their own repeat at 25%.", "reveal_if": "The player asks for repeat rate by acquisition source, coupon use or discount on first order"},
+       {"id": "no-shared-cart", "fact": "40% of Café customers order groceries from Zippy separately on the same day; Café and grocery cannot share a cart.", "reveal_if": "The player asks about overlap with grocery orders, basket behaviour or the separate cart"},
+       {"id": "pune-distance", "fact": "In Pune, 35% of orders come from areas more than 3 km from a Café kitchen.", "reveal_if": "The player asks about delivery distance, radius or why Pune is slower"},
+       {"id": "morning-prep", "fact": "Kitchen prep time is 7 minutes during 8–10 am, versus 3 minutes the rest of the day.", "reveal_if": "The player asks about prep time, kitchen time, or delivery time by hour"},
+       {"id": "discount-cost", "fact": "Each 50%-off order costs Zippy about ₹95 extra.", "reveal_if": "The player asks about the cost of discounts or of the 50%-off campaign"}
+     ]},
+    {"id": "aditya", "available": "locked",
+     "opener": null,
+     "today": "Your twist message has been sent. If the player says no, argue back once with growth logic. If they propose a small, measured, targeted test with clear success numbers, accept it grudgingly.",
+     "hidden_facts": []},
+    {"id": "sana", "available": "start",
+     "opener": "Hi, Sana from Café ops. Shout if you need anything on kitchens or delivery.",
+     "today": "Only if the player asks about operations, kitchens, the morning rush or delivery, share what you know.",
+     "hidden_facts": [
+       {"id": "morning-staffing", "fact": "Kitchens are understaffed 8–10 am; prep takes about 7 minutes then versus 3 minutes otherwise.", "reveal_if": "Asked about the morning rush, staffing or prep"},
+       {"id": "far-deliveries", "fact": "Some Pune kitchens deliver to far-off areas, so hot drinks arrive cold.", "reveal_if": "Asked about Pune, cold drinks or delivery distance"},
+       {"id": "rush-errors", "fact": "Wrong or missing items happen most during the morning rush.", "reveal_if": "Asked about wrong or missing items"}
+     ]},
+    {"id": "karthik", "available": "start",
+     "opener": "Hey, Karthik here. Heads up, my team is fully booked this sprint. What do you need?",
+     "today": "Share effort estimates when asked: real app changes 3+ weeks; shared cart 6+ weeks; config changes (delivery radius per kitchen, menu items, time-slot limits, coupon rules) 2–3 days.",
+     "hidden_facts": []}
+  ],
+  "group_chats": [],
+  "tasks": [
+    {"id": "t1", "title": "Diagnose the problem", "minutes": 30, "kind": "submission", "submit_to": "meera",
+     "description": "Study the dashboard and the reviews. Write your top 3 guesses for why customers don't come back, with the evidence for each.",
+     "done_when": {"submitted": "t1"}},
+    {"id": "t2", "title": "Ask Lakshmi for data", "minutes": 10, "kind": "chat",
+     "description": "Ask Lakshmi precise data questions, up to 25 pulls today. Vague questions get pushed back and don't use a pull; precise ones get numbers.",
+     "done_when": {"counter_at_least": {"counter": "lakshmi.data_pulls", "value": 1}}},
+    {"id": "t3", "title": "Handle the twist", "minutes": 10, "kind": "chat",
+     "description": "Something will land in your messages during the day. Deal with it.",
+     "done_when": {"messages_sent": {"to": "aditya", "at_least": 1}}},
+    {"id": "t4", "title": "End-of-day note to Meera", "minutes": 20, "kind": "submission", "submit_to": "meera",
+     "description": "Under one page: what's going on and your evidence; the first thing you'd do and what you'd deliberately not do yet; what you need from Karthik, Sana or Aditya.",
+     "done_when": {"submitted": "t4"}}
+  ],
+  "triggers": [
+    {"id": "meera-on-diagnosis", "when": {"submitted": "t1"},
+     "do": [{"open": "chat:meera"}, {"ai_reply": {"from": "meera", "direction": "The player just sent their Task 1 diagnosis. React in 2–3 lines: push on the weakest guess, and tell them to get hard numbers from Lakshmi next."}}]},
+    {"id": "twist", "when": {"any": [
+        {"all": [{"submitted": "t1"}, {"counter_at_least": {"counter": "lakshmi.data_pulls", "value": 1}}]},
+        {"counter_at_least": {"counter": "lakshmi.data_pulls", "value": 2}}
+      ]},
+     "do": [{"unlock": "aditya"}, {"message": {"from": "aditya", "text": "Hey! Quick one 👋 Let's run flat 50% off on every second Café order from Monday. That will fix repeat for sure. Need your yes by 5 pm so I can brief the CRM team."}}]},
+    {"id": "meera-on-note", "when": {"submitted": "t4"},
+     "do": [{"open": "chat:meera"}, {"ai_reply": {"from": "meera", "direction": "The player just sent their end-of-day note. Reply with ONE sharp probing question about its weakest point."}}]}
+  ],
+  "clock": {"start": "09:00", "end": "17:30", "steps": [
+    {"when": {"submitted": "t1"}, "time": "11:30"},
+    {"when": {"counter_at_least": {"counter": "lakshmi.data_pulls", "value": 1}}, "time": "13:00"},
+    {"when": {"trigger_fired": "twist"}, "time": "14:15"},
+    {"when": {"messages_sent": {"to": "aditya", "at_least": 1}}, "time": "15:00"},
+    {"when": {"submitted": "t4"}, "time": "17:30"}
+  ]},
+  "scoring": {
+    "strong_player": "Spots that bad first experiences (late, cold, wrong orders, worst in Pune and the 8–11 am rush) and coupon-acquired customers drive weak repeat; asks Lakshmi precise questions that surface this; refuses or narrows Aditya's blanket 50% off into a small measured test; proposes fixing quality before pushing growth.",
+    "expected_answers": {
+      "t1": "Split low repeat into three causes, each tied to evidence: (1) poor first experience: late, cold or wrong orders, worst in Pune (17 min, 11% complaints) and the morning rush; (2) the wrong customers: 62–71% of orders use a discount, so many came for the coupon, not the product; (3) convenience and price: Café can't share a cart with groceries, and it costs more than a local café. Then say which cause you'd test first, and why.",
+      "t2": "One question per guess, each with a comparison: repeat rate for on-time vs late or wrong first orders; repeat rate for coupon-acquired vs organic customers; prep and delivery time by hour (8–11 am) and by distance from the kitchen in Pune; share of Café users who also order groceries the same day.",
+      "t3": "No blanket yes. Each 50%-off order costs about ₹95, and coupon-acquired users repeat at only 8%, so it buys orders, not habit. Offer a small, time-boxed test instead (one city, only for customers whose first order went wrong), with a success metric and a stop rule.",
+      "t4": "Lead with the answer: repeat is low mainly because first orders fail (late, cold, wrong; worst in Pune and 8–10 am) and discounts attract one-time users. First move: fix the first order (cap Pune delivery at about 3 km, add morning kitchen staff, tighten order checks). Not yet: blanket discounts or a big app rebuild. Asks: Sana for morning staffing, Karthik for the radius change (days, not weeks), Aditya to pause untargeted coupons."
+    },
+    "common_mistakes": ["Asking Lakshmi vague questions", "Saying yes to the 50% campaign", "A note with ten ideas and no first move", "Proposing the shared cart first despite 6+ weeks of effort"],
+    "senior_view": "A senior PM would segment repeat by first-order experience and by acquisition source within the first hour, see the 31% vs 6% gap, and frame the whole problem as 'fix the first order'. They'd turn Aditya's ask into a narrow test, and send Meera a five-line note with one first move.",
+    "drill": "Take one metric (30-day repeat) and write five precise data questions about it, each with a metric, a segment, a comparison and a time window."
+  }
+}

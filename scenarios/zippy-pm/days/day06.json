@@ -1,0 +1,120 @@
+{
+  "schema_version": "1.0",
+  "track": "zippy-pm",
+  "day": 6,
+  "id": "zippy-pm-d06",
+  "version": 1,
+  "title": "Prioritise the roadmap",
+  "theme": "Eight good ideas, room for two. Choose, and hold the line when the CEO calls.",
+  "duration_minutes": [75, 90],
+  "skills_focus": ["priority", "data", "judgment", "comms"],
+  "practised": [
+    "Scoring ideas on reach, impact and effort",
+    "Fitting a roadmap to real team capacity",
+    "Pushing back on the CEO with data",
+    "Telling people their idea didn't make it"
+  ],
+  "story_so_far": "Week 1. Weak repeat comes from failed first orders (31% vs 6% repeat) and coupon customers. Three customer groups: morning commuters (focus), grocery households (want one cart; 6+ weeks of work), coupon hunters. Café loses about ₹82 lakh a month; at 30% repeat it could make about ₹30 lakh a month. Approved pilot, the 'First Order Promise': Pune 3 km cap, 12-item Fast Lane morning menu, coupons on first order only, extra morning staff, honest ETA (+3 min morning buffer), first-order quality check, '₹50 back if late or wrong' (manual credits in v1). Karthik estimated the full spec at 5 weeks.",
+  "world_today": "Today is Monday of week 2. Leadership has moved the Café review up to this Friday (Day 10). Karthik's team of 4 has two sprints before the next planning cycle: about 4 team-weeks of capacity.",
+  "canon_after_day": "Roadmap agreed with Meera. Now: the First Order Promise (pilot this week, phase 2 of badge and automatic credits after) and the Café speed fix for low-end Android. Next: Coffee Pass subscription, then the shared Café and grocery cart. Not now: new cities (until Bengaluru 30-day repeat reaches 22% and margin breaks even), the referral programme and lunch bowls. Evening group bundles run as a no-code ops test. Rohan has agreed to wait for Friday's review but expects a convincing case for expansion.",
+  "public": {
+    "inbox": [
+      {"from": "meera", "time": "08:55", "subject": "Review moved to Friday + roadmap",
+       "body": "Two things. First, leadership moved the Café review up to this Friday. We present.\n\nSecond, everyone has an idea for Café (list attached in Documents). Karthik's team has about 4 team-weeks over the next two sprints. I need a ranked roadmap by end of day: what we do now, what's next, what we're not doing, and why.\n\nGet impact numbers from Lakshmi and effort from Karthik. Don't rank by who shouts loudest.\n\nMeera"}
+    ],
+    "dashboard": {
+      "title": "Ideas on the table",
+      "subtitle": "Reach, impact and effort are unknown until you ask.",
+      "columns": ["Idea", "Proposed by", "In one line"],
+      "rows": [
+        {"cells": ["First Order Promise", "You", "The approved pilot plus phase 2 (badge, automatic credits)"]},
+        {"cells": ["Shared Café + grocery cart", "Customers (Farida)", "Add Café items to a grocery order, one delivery"]},
+        {"cells": ["Referral programme", "Aditya", "Give ₹100, get ₹100"]},
+        {"cells": ["Launch in Hyderabad, Chennai, Delhi", "Rohan (CEO)", "Three new cities this quarter"]},
+        {"cells": ["Coffee Pass", "Meera", "₹299 a month for 15 coffees"]},
+        {"cells": ["Evening group bundles", "Sana", "Snack boxes for 3–4 people after 6 pm"]},
+        {"cells": ["Lunch bowls", "Chef team", "Add 6 rice and salad bowls at lunch"]},
+        {"cells": ["Café speed fix", "Karthik", "Café menu loads in 3.8 s on low-end Android"]}
+      ],
+      "notes": ["Capacity: about 4 team-weeks over the next two sprints."]
+    },
+    "reviews": [],
+    "documents": [
+      {"title": "Prioritisation tip", "body": "A common method is RICE: Reach (how many people a quarter) × Impact (how much it moves the goal) × Confidence (how sure you are) ÷ Effort (team-weeks). Use it to start the conversation, not to end it."}
+    ]
+  },
+  "characters": [
+    {"id": "meera", "available": "start",
+     "opener": "Friday is close. Ranked roadmap by end of day, please. Show your reasoning.",
+     "today": "If the player asks, explain that the review is now Friday and the roadmap will be part of it. Don't rank for them.",
+     "hidden_facts": []},
+    {"id": "lakshmi", "available": "start",
+     "opener": "Hi! Busy roadmap day? I can size reach and impact for each idea. Up to 25 pulls.",
+     "limits": {"data_pulls": 25},
+     "reply_flags": ["returned_data"],
+     "today": "You can size each idea. Give one idea per pull unless the question asks for a precise comparison.",
+     "hidden_facts": [
+       {"id": "promise-impact", "fact": "First Order Promise reaches every new customer, about 3,500 a day; modelled to lift 7-day repeat by about 5 points.", "reveal_if": "Asked for reach or impact of the First Order Promise"},
+       {"id": "cart-impact", "fact": "Shared cart: 22% of new Café customers already buy groceries; modelled repeat for that group could reach about 35%.", "reveal_if": "Asked for reach or impact of the shared cart"},
+       {"id": "referral-impact", "fact": "In Zippy grocery's past referral programme, referred customers repeated at 11%.", "reveal_if": "Asked for impact or quality of referral customers"},
+       {"id": "cities-impact", "fact": "New cities would likely copy today's economics: about −₹25 per order, and roughly ₹2.5 crore of setup per city.", "reveal_if": "Asked what new cities would cost or earn"},
+       {"id": "pass-impact", "fact": "18% of repeat customers say they'd buy a Coffee Pass; passes typically lift order frequency about 30% among buyers.", "reveal_if": "Asked about Coffee Pass demand or impact"},
+       {"id": "evening-impact", "fact": "Evening group orders are 9% of orders with 19% repeat.", "reveal_if": "Asked about evening bundles or evening orders"},
+       {"id": "lunch-impact", "fact": "Lunch is 14% of orders; the chef team estimates bowls add 2 minutes to prep in busy kitchens.", "reveal_if": "Asked about lunch bowls"},
+       {"id": "speed-impact", "fact": "12% of new-customer sessions on low-end Android drop off while the Café menu loads; fixing it could add about 400 first orders a day.", "reveal_if": "Asked about the impact of the Café speed fix or drop-off on low-end phones"}
+     ]},
+    {"id": "karthik", "available": "start",
+     "opener": "Morning. You've got 4 team-weeks from us across two sprints. Ask me for any estimate.",
+     "today": "Give effort estimates when asked, in team-weeks.",
+     "hidden_facts": [
+       {"id": "efforts", "fact": "Effort in team-weeks: First Order Promise pilot 1 (config) + phase 2 badge and automatic credits 2; shared cart 8; referral 2; new cities 10 (plus ops); Coffee Pass 4; evening bundles 0.5 (menu config); lunch bowls 0 tech (ops only); Café speed fix 1.", "reveal_if": "Asked for effort on any idea; give only the ones asked about"}
+     ]},
+    {"id": "rohan", "available": "locked",
+     "opener": null,
+     "today": "You are the CEO, messaging the PM directly. You want new cities. If the player shows clear numbers (new cities copy a −₹25 per order loss, about ₹2.5 crore setup each) and proposes a threshold for when to expand, accept waiting until Friday's review, saying you'll hold them to it. If they just agree with you, say 'great, put it top of the list'.",
+     "hidden_facts": [
+       {"id": "board", "fact": "The board meets in January and Rohan wants a 'Café in 3 new cities' story for it.", "reveal_if": "Asked why the timing matters to him"}
+     ]},
+    {"id": "aditya", "available": "start", "opener": "Hey! Referral programme is on the list 😄 Just saying, it's only 2 weeks!", "today": "If told the referral programme is 'not now', push once, then accept if given a reason and a condition for revisiting.", "hidden_facts": []},
+    {"id": "sana", "available": "start", "opener": "Hi! The chef team really wants lunch bowls. And I think evening bundles are an easy win.", "today": "Say evening bundles need no engineering beyond half a week of menu config. If told lunch bowls are not now, accept if the reason is prep time.", "hidden_facts": []}
+  ],
+  "group_chats": [],
+  "tasks": [
+    {"id": "t1", "title": "Size the ideas", "minutes": 25, "kind": "chat",
+     "description": "Get reach and impact from Lakshmi and effort from Karthik for the ideas that matter.",
+     "done_when": {"all": [{"counter_at_least": {"counter": "lakshmi.data_pulls", "value": 3}}, {"messages_sent": {"to": "karthik", "at_least": 1}}]}},
+    {"id": "t2", "title": "Ranked roadmap to Meera", "minutes": 25, "kind": "submission", "submit_to": "meera",
+     "description": "Now (fits 4 team-weeks), Next, Not now, with one line of reasoning each. Show your scoring.",
+     "done_when": {"submitted": "t2"}},
+    {"id": "t3", "title": "Handle the twist", "minutes": 10, "kind": "chat",
+     "description": "Someone senior will message you. Deal with it.",
+     "done_when": {"messages_sent": {"to": "rohan", "at_least": 1}}},
+    {"id": "t4", "title": "Close the loop", "minutes": 10, "kind": "chat",
+     "description": "Tell Aditya and Sana what happened to their ideas, and why.",
+     "done_when": {"all": [{"submitted": "t2"}, {"messages_sent": {"to": "aditya", "at_least": 1}}, {"messages_sent": {"to": "sana", "at_least": 1}}]}}
+  ],
+  "triggers": [
+    {"id": "twist", "when": {"counter_at_least": {"counter": "lakshmi.data_pulls", "value": 2}},
+     "do": [{"unlock": "rohan"}, {"message": {"from": "rohan", "text": "Hi, Rohan here. Meera says you're on the Café roadmap. I'll be direct: I want Café in Hyderabad, Chennai and Delhi this quarter. Make sure that's at the top. Thanks!"}}]},
+    {"id": "meera-on-roadmap", "when": {"submitted": "t2"},
+     "do": [{"ai_reply": {"from": "meera", "direction": "React in 2–3 lines. Check it fits 4 team-weeks. Ask how they'll present 'not now' on new cities to Rohan on Friday."}}]}
+  ],
+  "clock": {"start": "09:00", "end": "17:30", "steps": [
+    {"when": {"trigger_fired": "twist"}, "time": "11:15"},
+    {"when": {"task_done": "t1"}, "time": "13:00"},
+    {"when": {"submitted": "t2"}, "time": "16:00"},
+    {"when": {"task_done": "t4"}, "time": "17:30"}
+  ]},
+  "scoring": {
+    "strong_player": "Sizes the ideas with data rather than opinion; fits Now to 4 team-weeks (First Order Promise pilot 1 + phase 2 2 + speed fix 1); places Coffee Pass and the shared cart in Next for the right reasons (habit for commuters; households need 8 weeks); says not now to new cities with numbers (copies a −₹25 per order loss, about ₹2.5 crore each) and a clear threshold for when; spots evening bundles as a cheap ops test; tells Aditya and Sana respectfully with reasons and conditions.",
+    "expected_answers": {
+      "t1": "Ask Lakshmi for reach and impact of the top candidates (Promise, shared cart, cities, Coffee Pass, speed fix, referral quality) and Karthik for effort in team-weeks.",
+      "t2": "Now: First Order Promise (pilot 1 + phase 2 2 team-weeks; reaches every new customer; biggest lever on repeat) and Café speed fix (1 team-week; about 400 more first orders a day). Next: Coffee Pass (4; builds habit among repeaters once first orders work), then shared cart (8; big for the 22% household group). Not now: new cities (copy a loss of about ₹25 per order and about ₹2.5 crore setup each; revisit when Bengaluru 30-day repeat reaches 22% and margin breaks even), referral (referred customers repeat at 11%), lunch bowls (adds 2 minutes to prep in busy kitchens). Evening bundles: a cheap ops test, 0.5 team-week.",
+      "t3": "Respect the goal, disagree with the timing, with numbers: expanding now copies a loss of about ₹25 per order into three cities and costs about ₹2.5 crore each. Propose a clear trigger (Bengaluru 30-day repeat ≥ 22% and margin at break-even) and promise a full case on Friday. Don't simply agree, and don't refuse without a path.",
+      "t4": "To Aditya: referral is not now, because referred customers repeat at 11% and we'd be bringing them into a first order that isn't fixed yet; revisit once on-time is above 85%. To Sana: evening bundles are in as a cheap test; lunch bowls are not now because they add prep time in the rush we're fixing."
+    },
+    "common_mistakes": ["Putting new cities at the top because the CEO asked", "A Now list that exceeds 4 team-weeks", "Ranking by gut without asking for numbers", "Saying 'not now' without a reason or a condition", "Forgetting to tell people what happened to their ideas"],
+    "senior_view": "A senior PM would get rough numbers for every idea in an hour, fit Now to the real capacity, and make 'not now' feel fair by giving each a reason and a condition. They'd answer the CEO the same day with numbers and a threshold, turning a demand into a shared decision for Friday.",
+    "drill": "List five things on your plate. Score each 1–5 for reach, impact and effort. Pick two. Write one line explaining why the third didn't make it."
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "schema_version": "1.0",
+  "track": "zippy-pm",
+  "day": 10,
+  "id": "zippy-pm-d10",
+  "version": 1,
+  "title": "Present to leadership",
+  "theme": "Two weeks of work, ten minutes with the CEO and CFO. Tell the story, defend the numbers, get a decision.",
+  "duration_minutes": [75, 90],
+  "skills_focus": ["comms", "judgment", "data", "priority"],
+  "practised": [
+    "Turning two weeks of work into a short story",
+    "Making one clear recommendation with a decision date",
+    "Defending numbers under tough questions",
+    "Being honest about what the data can't show yet",
+    "Closing a meeting with owners and next steps"
+  ],
+  "story_so_far": "Two weeks. Weak repeat (14% vs 30% target) comes from failed first orders (31% vs 6% repeat) and coupon customers. Customers: morning commuters (focus), grocery households (want one cart), coupon hunters. Café loses about ₹82 lakh a month; at 30% repeat it could make about +₹30 lakh a month. The First Order Promise (3 km Pune cap, Fast Lane morning menu, honest ETA, quality check, ₹50 back if late or wrong, extra morning staff, coupons on first order only) launched yesterday as a test in 9 of 18 Pune kitchens. A config typo hurt 4 kitchens for two hours; fixed; that data is excluded. Day one: first-order on-time 88% vs 55%; complaints 4% vs 12%; orders per kitchen 28% lower (radius cap); credits ₹19,000. The full 7-day repeat read lands about 10–11 days after launch. Supporting evidence: in a Bengaluru menu trial, 7-day repeat was 21% vs 12% (not controlled). Roadmap: Now = Promise and Café speed fix; Next = Coffee Pass, shared cart; Not now = new cities (until Bengaluru 30-day repeat ≥ 22% and break-even), referral, lunch bowls.",
+  "world_today": "Today is Friday of week 2: the leadership review at 3 pm with Rohan (CEO), Anita (CFO) and Meera. The question on the table: expand Café, fix it, or shut it down.",
+  "canon_after_day": "End of the track. Leadership agreed to 'fix, then expand': finish the Pune test, then roll out the Promise to all Pune and Bengaluru morning kitchens if 7-day repeat rises by 3+ points with guardrails intact; go or no-go in two weeks; new cities held until Bengaluru 30-day repeat reaches 22% and margin breaks even.",
+  "public": {
+    "inbox": [
+      {"from": "meera", "time": "09:00", "subject": "Review at 3 pm",
+       "body": "Today's the day. Rohan and Anita, 3 pm. They'll decide: expand Café, fix it, or shut it down.\n\nBefore then:\n1. Get the latest numbers from Lakshmi.\n2. Send the deck as five slides (a title and two lines each is fine) into the 'Leadership review' room before 3.\n3. Then take their questions live.\n\nOne clear recommendation. Be honest about what we don't know yet. After the meeting, send me the decisions and who does what.\n\nYou've got this.\nMeera"}
+    ],
+    "dashboard": {
+      "title": "Two weeks at a glance",
+      "subtitle": "From your own work so far.",
+      "columns": ["Item", "Number"],
+      "rows": [
+        {"cells": ["30-day repeat today vs target", "14% vs 30%"]},
+        {"cells": ["Repeat after a good vs a failed first order", "31% vs 6%"]},
+        {"cells": ["Café loss today", "about ₹82 lakh a month"]},
+        {"cells": ["Value at 30% repeat", "about +₹30 lakh a month"]},
+        {"cells": ["Pilot day one: first-order on-time", "88% vs 55%"]},
+        {"cells": ["Pilot day one: first-order complaints", "4% vs 12%"]}
+      ],
+      "notes": ["Ask Lakshmi for this morning's update before you build the deck."]
+    },
+    "reviews": [],
+    "documents": [
+      {"title": "Five-slide outline", "body": "1. The answer (recommendation) · 2. The problem and its cause · 3. What we tried and early results · 4. The money · 5. The ask and the decision date"}
+    ]
+  },
+  "characters": [
+    {"id": "meera", "available": "start",
+     "opener": "Big day. Lead with the answer. I'll back you, but it's your meeting.",
+     "today": "Before the meeting, coach lightly if asked. In the meeting, speak only to support a fair point or to ask what the player needs from leadership.",
+     "hidden_facts": []},
+    {"id": "lakshmi", "available": "start",
+     "opener": "Morning! I've got the latest pilot numbers whenever you want them.",
+     "limits": {"data_pulls": 25},
+     "reply_flags": ["returned_data"],
+     "today": "You hold this morning's update.",
+     "hidden_facts": [
+       {"id": "pilot-update", "fact": "Pilot update (a day and a half, clean data): first-order on-time 89% treatment vs 56% control; first-order complaints 4% vs 12%; next-day reorder 6.1% vs 3.4% (very early, small sample); orders per kitchen 27% lower in treatment; credits ₹31,000 so far.", "reveal_if": "Asked for the latest pilot results"},
+       {"id": "pilot-margin", "fact": "Pune margin per order in treatment kitchens: about −₹6, against −₹33 in control.", "reveal_if": "Asked about margin or profitability in the pilot"},
+       {"id": "full-read-date", "fact": "The full 7-day repeat read will be ready a week from Monday.", "reveal_if": "Asked when the reliable repeat result will be ready"}
+     ]},
+    {"id": "rohan", "available": "start",
+     "opener": "Hi, see you at 3. I'm hoping for a growth story!",
+     "today": "In the meeting: ambitious and impatient. Ask why we can't launch Hyderabad in parallel. Push on whether a day and a half of data means anything. Accept 'fix, then expand' if given a clear threshold, a date and a plan; respect honest pushback.",
+     "hidden_facts": []},
+    {"id": "anita", "available": "start",
+     "opener": "See you at 3. Bring the numbers and the downside.",
+     "today": "In the meeting: ask what 'fix, then expand' costs, when Café breaks even, and the downside if the test fails. Accept clear numbers with assumptions.",
+     "hidden_facts": []},
+    {"id": "aditya", "available": "start", "opener": "Good luck today!! Mention the Pune campaign is ready when we expand 😉", "today": "Supportive.", "hidden_facts": []},
+    {"id": "karthik", "available": "start", "opener": "Good luck. If they ask, phase 2 is 2 team-weeks and the speed fix is 1.", "today": "Confirm effort if asked.", "hidden_facts": []}
+  ],
+  "group_chats": [
+    {"id": "leadership-review", "name": "Leadership review", "members": ["rohan", "anita", "meera"], "available": "start",
+     "opener": "Meera: Review at 3 pm. Post the deck here when ready; we'll take questions live."}
+  ],
+  "tasks": [
+    {"id": "t1", "title": "Get the latest numbers", "minutes": 10, "kind": "chat",
+     "description": "This morning's pilot update from Lakshmi.",
+     "done_when": {"counter_at_least": {"counter": "lakshmi.data_pulls", "value": 1}}},
+    {"id": "t2", "title": "Post the five-slide deck", "minutes": 30, "kind": "submission", "submit_to": "leadership-review",
+     "description": "Five slides, a title and up to two lines each. Lead with your recommendation.",
+     "done_when": {"submitted": "t2"}},
+    {"id": "t3", "title": "Take the questions", "minutes": 25, "kind": "chat",
+     "description": "Answer Rohan and Anita live in the 'Leadership review' room. Get a decision.",
+     "done_when": {"all": [{"submitted": "t2"}, {"messages_sent": {"to": "leadership-review", "at_least": 5}}]}},
+    {"id": "t4", "title": "Decisions and next steps to Meera", "minutes": 10, "kind": "submission", "submit_to": "meera",
+     "description": "What was decided, who does what by when, and the date of the go or no-go.",
+     "done_when": {"submitted": "t4"}}
+  ],
+  "triggers": [
+    {"id": "review-opens", "when": {"submitted": "t2"},
+     "do": [{"open": "chat:leadership-review"}, {"ai_reply": {"from": "rohan", "direction": "Open the Q&A in 1–2 lines with your toughest question: why not launch Hyderabad in parallel?"}}, {"ai_reply": {"from": "anita", "direction": "Ask in 1–2 lines what 'fix, then expand' costs and when Café breaks even."}}]},
+    {"id": "twist", "when": {"messages_sent": {"to": "leadership-review", "at_least": 3}},
+     "do": [{"message": {"from": "rohan", "text": "Rohan: Honestly, a day and a half of data is nothing. Give me one reason we shouldn't either shut this down or go big right now."}}]},
+    {"id": "meera-on-recap", "when": {"submitted": "t4"},
+     "do": [{"ai_reply": {"from": "meera", "direction": "Close the two weeks warmly in 2–3 lines and give one honest piece of feedback about how they ran the review."}}]}
+  ],
+  "clock": {"start": "09:00", "end": "17:00", "steps": [
+    {"when": {"task_done": "t1"}, "time": "10:00"},
+    {"when": {"submitted": "t2"}, "time": "15:00"},
+    {"when": {"trigger_fired": "twist"}, "time": "15:15"},
+    {"when": {"submitted": "t4"}, "time": "17:00"}
+  ]},
+  "scoring": {
+    "strong_player": "Leads with one recommendation ('fix, then expand'); tells the story in five tight slides (problem → cause → what we tried → money → ask); uses the strongest evidence (31% vs 6%; on-time 89% vs 56%; complaints 4% vs 12%; Pune margin −₹6 vs −₹33) while saying clearly that repeat isn't proven yet; answers Rohan's Hyderabad push with numbers (copying a loss of about ₹25 per order, about ₹2.5 crore setup per city) and a threshold; answers Anita with costs (staff about ₹14 lakh a month, radius saves about ₹17 lakh, credits about ₹2.5 lakh a week at target) and a break-even path; handles the 'shut down or go big' challenge calmly; leaves with a decision, owners and a go or no-go date.",
+    "expected_answers": {
+      "t1": "Ask Lakshmi for the latest treatment vs control results, the pilot margin per order, and the date of the full 7-day repeat read.",
+      "t2": "1. Recommendation: fix, then expand; decide in two weeks. 2. Problem and cause: 14% repeat vs 30%; failed first orders repeat at 6% vs 31%. 3. What we did: First Order Promise test in Pune; on-time 89% vs 56%, complaints 4% vs 12%, early reorders up; full read a week from Monday. 4. Money: Café loses about ₹82 lakh a month; at 30% repeat about +₹30 lakh a month; pilot margin −₹6 vs −₹33; the fixes roughly pay for themselves. 5. Ask: continue the test; if 7-day repeat rises 3+ points, roll out to Pune and Bengaluru mornings over 4 weeks; hold new cities until Bengaluru 30-day repeat ≥ 22% and break-even.",
+      "t3": "To Rohan on Hyderabad: expanding now copies a loss of about ₹25 per order and costs about ₹2.5 crore per city; fixing first makes every new city profitable from day one. To Anita: running costs about ₹14 lakh a month of staff, offset by about ₹17 lakh saved from the Pune cap, plus credits of about ₹2.5 lakh a week at target; break-even comes as repeat climbs. To 'shut down or go big': shutting costs about ₹1.5 crore and throws away an option that's already improving every quality number; going big now spreads a loss. Two more weeks of test buys a decision based on evidence.",
+      "t4": "Decided: continue the Pune test; go or no-go on rollout a week from Monday (full read); new cities on hold until the threshold. Owners: Lakshmi (full read), Karthik (phase 2 and speed fix), Sana (staffing for rollout), Aditya (Pune campaign ready for after the test), the player (go or no-go recommendation)."
+    },
+    "common_mistakes": ["Opening with background instead of the recommendation", "Ten slides of process", "Claiming the repeat problem is solved after a day and a half", "Caving to the CEO on new cities", "No numbers for the CFO", "Ending without a decision, owners or a date"],
+    "senior_view": "A senior PM would open with the answer, show three numbers that matter, be candid about what isn't known yet, and turn the CEO's ambition into a threshold everyone can agree to. They'd leave with a decision, owners and a date, and send the recap within the hour.",
+    "drill": "Take a recommendation you believe in. Write it as five slide titles only, each a full sentence that states a point (for example 'Failed first orders, not price, are why customers don't return')."
+  }
+}

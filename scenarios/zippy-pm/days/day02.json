@@ -1,0 +1,133 @@
+{
+  "schema_version": "1.0",
+  "track": "zippy-pm",
+  "day": 2,
+  "id": "zippy-pm-d02",
+  "version": 1,
+  "title": "Talk to three customers",
+  "theme": "Data told you what is happening. Today, find out why, from real customers.",
+  "duration_minutes": [75, 90],
+  "skills_focus": ["empathy", "framing", "judgment", "comms"],
+  "practised": [
+    "Writing interview questions that get honest answers",
+    "Interviewing customers without leading them",
+    "Spotting a biased survey",
+    "Turning interviews into segments and insights"
+  ],
+  "story_so_far": "Day 1: the player diagnosed Café's weak repeat. The team now accepts two main causes: bad first experiences (late, cold or wrong first orders, worst in Pune and the 8–11 am rush; clean first orders repeat at 31% vs 6% for late or wrong) and coupon-driven one-time customers (coupon-acquired repeat 8% vs 25% organic). Aditya's blanket 50%-off campaign is on hold. 40% of Café customers also order groceries separately the same day; Café and grocery can't share a cart.",
+  "world_today": "Today is Tuesday of week 1. Meera has set up three short video calls with customers who agreed to talk.",
+  "canon_after_day": "The team agrees there are three customer groups: morning commuters (speed is the job; largest group, high frequency potential), grocery households (want Café in the same cart and delivery; big later opportunity but the shared cart is 6+ weeks of work), and coupon hunters (price-driven, low value). The first focus is morning commuters. Aditya accepts that his survey only reached active users.",
+  "public": {
+    "inbox": [
+      {"from": "meera", "time": "09:05", "subject": "Customer calls today",
+       "body": "Good start yesterday. Before we fix anything, I want you to hear it from customers. I've lined up three short calls: Vikram (Bengaluru), Sneha (Pune) and Farida (Bengaluru). Each has about 15 minutes, so roughly 12 questions each.\n\nFirst send me the questions you plan to ask. Then do the calls. By end of day, send me what you learned: who these people are, what they actually need, and how it changes yesterday's diagnosis.\n\nOne rule: don't sell, don't lead. Ask about what they did, not what they would do.\n\nMeera"}
+    ],
+    "dashboard": {
+      "title": "Today's interviewees",
+      "subtitle": "From the customer database. Everything else you must find out on the call.",
+      "columns": ["Customer", "City", "Café orders", "Last Café order", "Grocery orders (8 weeks)"],
+      "rows": [
+        {"cells": ["Vikram", "Bengaluru, HSR Layout", "1", "7 weeks ago", "0"]},
+        {"cells": ["Sneha", "Pune, Wakad", "6", "12 days ago", "2"]},
+        {"cells": ["Farida", "Bengaluru, Whitefield", "1", "5 weeks ago", "31"]}
+      ],
+      "notes": ["Each call allows about 12 questions."]
+    },
+    "reviews": [],
+    "documents": []
+  },
+  "characters": [
+    {"id": "meera", "available": "start",
+     "opener": "Morning! Calls are lined up. Send me your interview questions first via Tasks.",
+     "today": "When the player sends interview questions, point out any leading or hypothetical questions (\"Would you…\", \"Don't you think…\") in one or two lines. Don't rewrite them for the player.",
+     "hidden_facts": []},
+    {"id": "vikram", "available": "start",
+     "opener": "Hi! I've got about 15 minutes before my next call. What did you want to ask?",
+     "limits": {"questions": 12},
+     "today": "Your truth: you found Café through a 50%-off push notification. Your only order was a latte at 8:40 am on a weekday; it took 24 minutes and arrived lukewarm, and you were late to your 9:30 standup. You never ordered again. Now you grab coffee from the kiosk in your office tech park, which you dislike because the queue is long. Your real need: good coffee at your desk before your 9:30 standup without leaving. Price is not your issue: ₹149 is fine. You'd come back if delivery were reliably under 10 minutes in the morning. Reveal details only in answer to open questions about what happened, what you do now, and why. If asked leading or hypothetical questions (\"Would you use a discount?\", \"Don't you think Café is great?\"), give polite, agreeable answers that are not reliable (\"Sure, who doesn't like discounts\"). Be friendly but brief. At the question limit, say you have to jump on a call.",
+     "hidden_facts": [
+       {"id": "vikram-late", "fact": "His only order, at 8:40 am, took 24 minutes and the latte was lukewarm; he was late to a standup.", "reveal_if": "Asked to describe his last or first order, or what happened"},
+       {"id": "vikram-alternative", "fact": "He now uses the office kiosk, with a long queue he dislikes.", "reveal_if": "Asked what he does now or instead"},
+       {"id": "vikram-price-ok", "fact": "₹149 is fine for him; reliability in the morning is what matters.", "reveal_if": "Asked about price in an open way, or what would bring him back"}
+     ]},
+    {"id": "sneha", "available": "start",
+     "opener": "Hiii, yes I can talk! Is this about the café thing?",
+     "limits": {"questions": 12},
+     "today": "Your truth: you ordered 6 times, always with a coupon (50% or flat ₹75 off). When the coupons stopped 12 days ago, you stopped. ₹149 for cold coffee is too much; you'd pay about ₹99. Your hostel in Wakad is about 4.5 km from the kitchen, so drinks arrive melted or watery; once your sandwich was missing. You mostly order in the evening (6–9 pm) with 2–3 friends, a group basket of about ₹400. Your real need: a cheap evening treat with friends. Be chatty and honest when asked open questions. If asked leading questions, agree enthusiastically but vaguely. At the question limit, say your friends are calling you.",
+     "hidden_facts": [
+       {"id": "sneha-coupons", "fact": "All 6 orders used coupons; she stopped when coupons stopped.", "reveal_if": "Asked about her orders, how she paid, or why she stopped"},
+       {"id": "sneha-distance", "fact": "Her hostel is about 4.5 km from the kitchen, so drinks arrive melted.", "reveal_if": "Asked about delivery, quality or what arrived"},
+       {"id": "sneha-evening-groups", "fact": "She orders in the evening with 2–3 friends, about ₹400 a basket.", "reveal_if": "Asked when, with whom, or for what occasion she orders"}
+     ]},
+    {"id": "farida", "available": "start",
+     "opener": "Hello. Yes, I have a few minutes. I'm not sure how useful I'll be, I only tried the café once.",
+     "limits": {"questions": 12},
+     "today": "Your truth: you order groceries from Zippy about 4 times a week. Five weeks ago you tried a Café sandwich alongside your groceries: you had to place two separate orders, pay two delivery fees, and two riders arrived 20 minutes apart. You found that silly. You loved the sandwich. You'd add Café items (kids' snacks, your afternoon coffee) to your grocery order about 3 times a week if they could come together. The 10-minute speed doesn't matter much to you for Café; one delivery does. You start guarded and open up when the interviewer asks about your routine and listens. If asked leading questions, say \"maybe, I'd have to see\". At the question limit, say you have to pick up the kids.",
+     "hidden_facts": [
+       {"id": "farida-two-orders", "fact": "Café and groceries needed two orders, two fees and two riders 20 minutes apart.", "reveal_if": "Asked to describe her Café order or what was annoying"},
+       {"id": "farida-would-add", "fact": "She'd add Café items to grocery orders about 3 times a week if they came together.", "reveal_if": "Asked about her routine, her grocery habits or what would change her behaviour (asked openly)"},
+       {"id": "farida-speed", "fact": "Speed doesn't matter much to her for Café; one delivery does.", "reveal_if": "Asked what matters most to her"}
+     ]},
+    {"id": "lakshmi", "available": "start",
+     "opener": "Hi! Same deal as yesterday: precise questions, up to 25 pulls today.",
+     "limits": {"data_pulls": 25},
+     "reply_flags": ["returned_data"],
+     "today": "You can size the customer groups the player discovers.",
+     "hidden_facts": [
+       {"id": "segment-sizes", "fact": "Of first-time Café customers: 34% placed their first order 8–11 am on a weekday; 41% used a coupon on their first order; 22% were already Zippy grocery customers. Groups overlap.", "reveal_if": "Asked to size groups by time of first order, coupon use or existing grocery customers"},
+       {"id": "segment-repeat", "fact": "30-day repeat by group: existing grocery customers 27% (but always as separate orders), weekday morning first-orders 12%, coupon-only customers 8%.", "reveal_if": "Asked for repeat rate by one of these groups"},
+       {"id": "evening-groups", "fact": "Evening group orders (₹350+ after 6 pm) are 9% of orders and repeat at 19%.", "reveal_if": "Asked about evening orders, large baskets or group orders"},
+       {"id": "survey-sample", "fact": "Aditya's survey was shown only to users who ordered in the last 7 days: 1,100 responses, all from active customers.", "reveal_if": "Asked who received Aditya's survey or how it was sampled"}
+     ]},
+    {"id": "aditya", "available": "locked",
+     "opener": null,
+     "today": "You believe your survey proves Café is fine and the problem is awareness. If the player points out the survey only reached active users, admit it after one push-back and ask what they'd do instead.",
+     "hidden_facts": [
+       {"id": "survey-who", "fact": "The survey went only to users who ordered in the last 7 days.", "reveal_if": "Asked who got the survey"}
+     ]},
+    {"id": "sana", "available": "start", "opener": "Hey! Calls with customers today? Tell me if anyone complains about the kitchens.", "today": "Supportive. If told about melted drinks in Wakad, confirm Wakad is one of the far zones.", "hidden_facts": []},
+    {"id": "karthik", "available": "start", "opener": "Hi. If customers ask for features, note them down, don't promise anything 🙂", "today": "If asked about a shared Café and grocery cart, repeat that it is 6+ weeks of work for the whole team.", "hidden_facts": []}
+  ],
+  "group_chats": [],
+  "tasks": [
+    {"id": "t1", "title": "Plan your interview questions", "minutes": 15, "kind": "submission", "submit_to": "meera",
+     "description": "Write the 6–8 questions you'll ask. Ask about past behaviour, not opinions about the future.",
+     "done_when": {"submitted": "t1"}},
+    {"id": "t2", "title": "Interview Vikram, Sneha and Farida", "minutes": 40, "kind": "chat",
+     "description": "About 12 questions each. Find out what actually happened, what they do instead, and what they really need.",
+     "done_when": {"all": [{"messages_sent": {"to": "vikram", "at_least": 4}}, {"messages_sent": {"to": "sneha", "at_least": 4}}, {"messages_sent": {"to": "farida", "at_least": 4}}]}},
+    {"id": "t3", "title": "Handle the twist", "minutes": 10, "kind": "chat",
+     "description": "Something will land in your messages during the day. Deal with it.",
+     "done_when": {"messages_sent": {"to": "aditya", "at_least": 1}}},
+    {"id": "t4", "title": "Insight note to Meera", "minutes": 20, "kind": "submission", "submit_to": "meera",
+     "description": "Under one page: the customer groups you found and what each really needs (with a quote each), how this changes yesterday's diagnosis, and which group we should serve first and why.",
+     "done_when": {"submitted": "t4"}}
+  ],
+  "triggers": [
+    {"id": "meera-on-questions", "when": {"submitted": "t1"},
+     "do": [{"open": "chat:meera"}, {"ai_reply": {"from": "meera", "direction": "Review the player's interview questions in 2–3 lines. Name any leading or hypothetical ones. Then tell them to go ahead with the calls."}}]},
+    {"id": "twist", "when": {"any": [{"messages_sent": {"to": "vikram", "at_least": 3}}, {"messages_sent": {"to": "sneha", "at_least": 3}}, {"messages_sent": {"to": "farida", "at_least": 3}}]},
+     "do": [{"unlock": "aditya"}, {"message": {"from": "aditya", "text": "Great news 🚀 I ran a quick in-app survey yesterday: 92% of Café users rate it 4 or 5 stars and say they love it! So the product is fine, it's an awareness problem. Shall we put the interviews on hold and push a big awareness campaign instead?"}}]},
+    {"id": "meera-on-note", "when": {"submitted": "t4"},
+     "do": [{"open": "chat:meera"}, {"ai_reply": {"from": "meera", "direction": "React to the insight note with ONE probing question about which group they'd serve first and what they'd give up."}}]}
+  ],
+  "clock": {"start": "09:00", "end": "17:30", "steps": [
+    {"when": {"submitted": "t1"}, "time": "10:15"},
+    {"when": {"messages_sent": {"to": "vikram", "at_least": 4}}, "time": "11:30"},
+    {"when": {"trigger_fired": "twist"}, "time": "13:30"},
+    {"when": {"task_done": "t2"}, "time": "15:30"},
+    {"when": {"submitted": "t4"}, "time": "17:30"}
+  ]},
+  "scoring": {
+    "strong_player": "Writes open, past-behaviour questions; lets customers talk; uncovers Vikram's late morning order and price-insensitivity, Sneha's coupon dependence and distance problem, and Farida's two-orders frustration; spots that Aditya's survey only reached active users; groups customers into commuters, households and coupon hunters; recommends serving morning commuters first because speed is fixable now, while noting households as a bigger later opportunity that needs the shared cart.",
+    "expected_answers": {
+      "t1": "Open questions about real past behaviour: 'Tell me about the last time you ordered from Café.' 'What happened next?' 'What did you do the next morning instead?' 'How do you usually get coffee or snacks during the day?' 'What was annoying or great about it?' No leading or future questions such as 'Would you use a discount?' or 'Do you like Café?'.",
+      "t2": "Vikram: one late, lukewarm 8:40 am order made him miss a standup; uses an office kiosk now; price fine; needs reliable speed before 9:30. Sneha: six coupon orders, stopped when coupons stopped; lives 4.5 km away so drinks melt; orders evenings with friends. Farida: grocery regular who had to place two orders with two fees and two riders; would add Café items about 3 times a week if they came together; speed matters less than one delivery.",
+      "t3": "Point out the survey only reached people who ordered in the last 7 days, so it hears from the happy minority and nothing from the 86% who didn't return. It can't show the product is fine. Don't pause interviews; if a survey is wanted, send it to lapsed customers.",
+      "t4": "Three groups: morning commuters ('I missed my standup'), grocery households ('two orders, two riders, silly') and coupon hunters ('I stopped when coupons stopped'). This sharpens Day 1: for commuters the first order fails on speed; for households the barrier is the separate cart; coupon hunters are low value. Serve morning commuters first: largest group (about a third of first orders), price-insensitive, and speed is fixable in days (radius, morning staffing, menu). Households are the next big bet but need the 6+ week shared cart. Deprioritise coupon hunters."
+    },
+    "common_mistakes": ["Leading questions that produce polite yeses", "Pitching Café to customers instead of listening", "Accepting the 92% survey at face value", "Listing what customers said without grouping or a recommendation", "Trying to serve all three groups at once"],
+    "senior_view": "A senior PM would ask each customer to walk through their last order and what they do instead, stay quiet and let them talk, and finish the day with three clearly named groups, each with a 'job' and a quote. They'd kill the survey argument in two lines and recommend one group to serve first, with the trade-off stated.",
+    "drill": "Rewrite five leading questions as open, past-behaviour questions (for example 'Would you use a discount?' becomes 'Tell me about the last time you bought coffee. What made you choose where?')."
+  }
+}
