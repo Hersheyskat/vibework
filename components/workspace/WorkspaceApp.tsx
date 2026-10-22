@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import Link from "next/link";
 import type { PublicDayPayload } from "@/lib/scenarios/types";
 import {
   clearOpenHint,
@@ -241,7 +242,10 @@ export function WorkspaceApp({ initial }: Props) {
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-center gap-3 border-b border-white/8 px-4 py-4">
+        <Link
+          href="/"
+          className="flex items-center gap-3 border-b border-white/8 px-4 py-4 hover:bg-[var(--vw-sidebar-hover)]"
+        >
           <div
             className="flex h-9 w-9 items-center justify-center rounded-[10px] text-sm font-bold text-white"
             style={{
@@ -259,7 +263,7 @@ export function WorkspaceApp({ initial }: Props) {
               {data.track.role} · Day {data.day.day}
             </div>
           </div>
-        </div>
+        </Link>
 
         <div className="flex-1 overflow-y-auto px-2 py-3">
           <SectionLabel>Workspace</SectionLabel>

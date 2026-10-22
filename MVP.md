@@ -2,9 +2,11 @@
 
 ## Product
 
-Mobile-friendly workplace simulation. Learners practice **Product Manager at Zippy Café** inside a Slack-style workspace — scripted scenario cartridges, AI colleagues, comparable scores.
+Mobile-friendly workplace simulation. Learners pick a **scenario** (role + company), then practice inside a Slack-style workspace — scripted cartridges, AI colleagues, comparable scores.
 
-## Auth (this MVP)
+Zippy Café PM is the first scenario, not the whole product.
+
+## Auth
 
 **Google login only** via Supabase Auth.
 
@@ -12,19 +14,21 @@ Mobile-friendly workplace simulation. Learners practice **Product Manager at Zip
 - No email OTP / magic link
 - No password signup
 
-### Flow
+## Flow
 
-1. Open app (`/`)
-2. **Continue with Google**
-3. Resume unfinished day, or start Day 1
-4. Day workspace (`/play/[runId]`)
-5. Score → next day (Day 2+ pay gate — later)
+1. Open app (`/`) — VibeWork home + **scenario catalog**
+2. Open a scenario (`/tracks/[trackId]`)
+3. **Continue with Google** (if needed)
+4. Start Day 1 or resume unfinished day
+5. Day workspace (`/play/[runId]`)
+6. Score → next day (Day 2+ pay gate — later)
 
-Login lives only on the landing gate. No mid-play sign-in.
+Login is on the scenario page (and header Sign in). No mid-play sign-in.
 
 ## In scope
 
-- 1 track: `scenarios/zippy-pm/` (10 work days)
+- Catalog UI that lists every folder under `scenarios/`
+- 1 track content today: `scenarios/zippy-pm/` (10 work days)
 - Slack-style workspace: inbox, dashboard, tasks, DMs, Saathi
 - Engine: counters, triggers, clock, task submit, AI replies (OpenRouter)
 - Google account → session (Supabase) → play
@@ -34,8 +38,8 @@ Login lives only on the landing gate. No mid-play sign-in.
 - Phone / email OTP
 - Razorpay / payments
 - College admin CSV
-- Multi-track catalog UI
 - Full scoring / employer dashboards
+- Filters / search across many tracks (when catalog grows)
 
 ## Stack
 

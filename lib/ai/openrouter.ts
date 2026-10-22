@@ -2,7 +2,7 @@ export type ChatTurn = { role: "system" | "user" | "assistant"; content: string 
 
 function config() {
   const apiKey = process.env.OPENROUTER_API_KEY;
-  const model = process.env.OPENROUTER_MODEL || "anthropic/claude-sonnet-4";
+  const model = process.env.OPENROUTER_MODEL || "openai/gpt-4o";
   const baseUrl =
     process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1";
   return { apiKey, model, baseUrl };

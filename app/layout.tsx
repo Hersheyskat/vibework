@@ -15,9 +15,9 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VibeWork — Zippy Café",
+  title: "VibeWork",
   description:
-    "Practice product management inside a realistic workplace simulation.",
+    "Practice real workplace roles inside fictional companies — scenarios, AI colleagues, fair scoring.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

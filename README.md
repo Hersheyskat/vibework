@@ -1,6 +1,6 @@
 # VibeWork
 
-Mobile-friendly workplace simulation. Learners practice a Product Manager role at Zippy Café inside a Slack-style workspace — scripted scenario files, AI colleagues, fair scoring.
+Mobile-friendly workplace simulation. Learners pick a role inside a fictional company and practice inside a Slack-style workspace — scripted scenario files, AI colleagues, fair scoring.
 
 See [MVP.md](./MVP.md) for scope. Auth is **Google login only** (no OTP).
 
@@ -10,11 +10,11 @@ See [MVP.md](./MVP.md) for scope. Auth is **Google login only** (no OTP).
 npm install
 cp .env.example .env.local
 # add OPENROUTER_API_KEY + Supabase URL/publishable key
-# enable Google provider in Supabase Auth (see MVP.md / below)
+# enable Google provider in Supabase Auth (see below)
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) → **Continue with Google** → Start Day 1.
+Open [http://localhost:3000](http://localhost:3000) → pick a scenario card → **Continue with Google** → Start Day 1.
 
 Without an OpenRouter key the app still runs in **demo mode** (scripted fallbacks for chats).
 
@@ -24,7 +24,7 @@ Without an OpenRouter key the app still runs in **demo mode** (scripted fallback
 2. Google Cloud OAuth Web client → Client ID + Secret into Supabase
 3. Redirect URLs:
    - Supabase callback: `https://<project-ref>.supabase.co/auth/v1/callback` (shown in dashboard)
-   - App Site URL / redirect allow list: `http://localhost:3000` and `http://localhost:3000/auth/callback`
+   - App allow list: `http://localhost:3000/**` (covers `/auth/callback` and `?next=…`)
 
 ## Stack
 
@@ -33,6 +33,14 @@ Without an OpenRouter key the app still runs in **demo mode** (scripted fallback
 - Scenario cartridges in `/scenarios/<track-id>/`
 - OpenRouter for AI (`OPENROUTER_API_KEY`)
 - Day-run state stored under `.data/runs/` (local MVP)
+
+## Routes
+
+| Path | Role |
+|---|---|
+| `/` | Home + scenario catalog |
+| `/tracks/[trackId]` | Scenario detail + Google / start |
+| `/play/[runId]` | Day workspace |
 
 ## Scenarios
 
@@ -43,7 +51,7 @@ scenarios/zippy-pm/
   SCENARIO_FORMAT.md
 ```
 
-The engine is track-agnostic: add another folder under `scenarios/` for a new company/role.
+Add another company/role by dropping a new folder under `scenarios/` — it shows up on the homepage automatically.
 
 ## Scripts
 
