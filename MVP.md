@@ -1,46 +1,36 @@
-# VibeWork MVP
+# VibeWork Try MVP
+
+Source of truth: [`docs/BRIEF.md`](./docs/BRIEF.md). Behaviour spec: [`prototype/vibework-try.html`](./prototype/vibework-try.html). Standing rules: [`.cursor/rules/vibework.mdc`](./.cursor/rules/vibework.mdc).
 
 ## Product
 
-Mobile-friendly workplace simulation. Learners pick a **scenario** (role + company), then practice inside a Slack-style workspace — scripted cartridges, AI colleagues, comparable scores.
-
-Zippy Café PM is the first scenario, not the whole product.
+Paste a job post (or type a role), pick a level, get one AI-generated work-day at a fictional company: boss, colleagues, inbox, dashboard, twist, four tasks, practice score and mentor debrief.
 
 ## Auth
 
-**Google login only** via Supabase Auth.
+**Google login** via Supabase Auth (our existing setup).
 
-- No phone OTP
-- No email OTP / magic link
-- No password signup
+- No phone OTP for now
+- Email OTP deferred (brief allows it; we keep Google-only until Hersh asks)
 
-## Flow
+## Current milestone
 
-1. Open app (`/`) — VibeWork home + **scenario catalog**
-2. Open a scenario (`/tracks/[trackId]`)
-3. **Continue with Google** (if needed)
-4. Start Day 1 or resume unfinished day
-5. Day workspace (`/play/[runId]`)
-6. Score → next day (Day 2+ pay gate — later)
+**M1 · Generation** — OpenRouter-only AI; guard → screen → plan → check → repair; Building / Blocked screens. Play day is M2.
 
-Login is on the scenario page (and header Sign in). No mid-play sign-in.
-
-## In scope
-
-- Catalog UI that lists every folder under `scenarios/`
-- 1 track content today: `scenarios/zippy-pm/` (10 work days)
-- Slack-style workspace: inbox, dashboard, tasks, DMs, Saathi
-- Engine: counters, triggers, clock, task submit, AI replies (OpenRouter)
-- Google account → session (Supabase) → play
-
-## Out of scope (later)
-
-- Phone / email OTP
-- Razorpay / payments
-- College admin CSV
-- Full scoring / employer dashboards
-- Filters / search across many tracks (when catalog grows)
+**AI:** only `OPENROUTER_API_KEY` (Claude models via OpenRouter slugs). No Anthropic direct key.
 
 ## Stack
 
-Next.js App Router · Supabase Auth (Google) · OpenRouter · scenario JSON under `/scenarios`
+Next.js App Router · TypeScript strict · Supabase (Auth + Postgres) · Drizzle · Anthropic (M1+) · Inngest (M1+) · Vercel
+
+## Routes
+
+| Path | Role |
+| --- | --- |
+| `/` | Try setup (paste job, pick level) |
+| `/tracks/[trackId]` | Legacy handcrafted Zippy catalog (kept for now) |
+| `/play/[runId]` | Legacy day workspace |
+
+## In scope (full MVP, M0–M4)
+
+See milestones in `docs/BRIEF.md`. Customers never see check failures; shelf of ready-made days; switchable models per AI job.

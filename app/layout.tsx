@@ -1,30 +1,40 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import {
+  Bricolage_Grotesque,
+  JetBrains_Mono,
+  Source_Sans_3,
+} from "next/font/google";
 import "./globals.css";
 
-const ibmPlex = IBM_Plex_Sans({
-  variable: "--font-ibm-plex",
+const display = Bricolage_Grotesque({
+  variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["600", "800"],
 });
 
-const ibmPlexMono = IBM_Plex_Mono({
-  variable: "--font-ibm-plex-mono",
+const body = Source_Sans_3({
+  variable: "--font-body",
   subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: ["400", "600", "700"],
+});
+
+const mono = JetBrains_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  weight: ["500", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "VibeWork",
+  title: "VibeWork Try",
   description:
-    "Practice real workplace roles inside fictional companies — scenarios, AI colleagues, fair scoring.",
+    "Paste a job post, get one realistic AI-generated work-day, and practise with a boss, colleagues, Saathi and a mentor.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${ibmPlex.variable} ${ibmPlexMono.variable} h-full`}
+      className={`${display.variable} ${body.variable} ${mono.variable} h-full`}
     >
       <body className="min-h-full antialiased">{children}</body>
     </html>

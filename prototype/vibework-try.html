@@ -1,0 +1,1205 @@
+<title>VibeWork Try</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: same workplace shell as the Zippy game (top bar, rail, one pane); setup and planning screens run full-width without the rail */
+:root{
+  --bg:#f6f5fb; --panel:#ffffff; --ink:#1b1830; --muted:#625e7a; --line:#e2e0ee;
+  --brand:#3b2fb8; --brand-ink:#ffffff; --mango:#f2a516; --mango-soft:#fff2d6;
+  --me:#ebe8ff; --good:#1f8a55; --bad:#c2412d; --warn:#a86a00;
+  --display:"Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --body:"Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#13111f; --panel:#1c1a2b; --ink:#ecebf5; --muted:#a6a2bf; --line:#2f2c44;
+  --brand:#8f86ff; --brand-ink:#13111f; --mango:#f5b83d; --mango-soft:#3a2e14;
+  --me:#2b2650; --good:#4cc488; --bad:#ef7a66; --warn:#e8b34a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#13111f; --panel:#1c1a2b; --ink:#ecebf5; --muted:#a6a2bf; --line:#2f2c44;
+  --brand:#8f86ff; --brand-ink:#13111f; --mango:#f5b83d; --mango-soft:#3a2e14;
+  --me:#2b2650; --good:#4cc488; --bad:#ef7a66; --warn:#e8b34a; color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--body)}
+*{box-sizing:border-box}
+button,textarea,input{font:inherit;color:inherit}
+.app{height:100%;display:grid;grid-template-rows:auto 1fr;grid-template-columns:250px 1fr}
+.app.solo{grid-template-columns:1fr} .app.solo nav{display:none}
+header{grid-column:1/-1;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:var(--brand);color:var(--brand-ink)}
+.logo{font:800 22px/1 var(--display);letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.logo span{color:var(--mango)}
+.logo .trytag{font:700 11px var(--mono);letter-spacing:.1em;background:var(--mango);color:#1b1830;border-radius:5px;padding:2px 7px}
+.role{font-size:14px;opacity:.88;min-width:0}
+.hdr-r{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.clock{font:500 14px var(--mono);background:rgba(0,0,0,.18);padding:4px 10px;border-radius:6px}
+.reset{background:none;border:1px solid currentColor;border-radius:6px;padding:3px 10px;font-size:13px;cursor:pointer;opacity:.88}
+nav{border-right:1px solid var(--line);background:var(--panel);overflow-y:auto;padding:14px 10px;display:flex;flex-direction:column;gap:2px;
+  padding-left:max(10px,env(safe-area-inset-left,0px))}
+.navlabel{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);padding:12px 10px 4px;font-weight:700}
+.navbtn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-radius:8px;padding:8px 10px;cursor:pointer}
+.navbtn:hover{background:var(--bg)}
+.navbtn[aria-current="true"]{background:var(--me);font-weight:700}
+.navbtn:focus-visible,button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--mango);outline-offset:2px}
+.av{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:700 12px var(--body);color:#fff;flex:none}
+.who{min-width:0;flex:1;display:flex;flex-direction:column;line-height:1.2}
+.who small{color:var(--muted);font-weight:400;font-size:12px}
+.badge{background:var(--mango);color:#1b1830;font-size:11px;font-weight:700;border-radius:10px;padding:1px 7px}
+.lock{font-size:11px;color:var(--muted)}
+main{overflow-y:auto;min-width:0}
+.pane{max-width:760px;margin:0 auto;padding-block:24px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font:800 30px/1.15 var(--display);letter-spacing:-.02em;margin:0 0 6px;text-wrap:balance}
+h2{font:700 20px/1.25 var(--display);margin:28px 0 10px;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 18px;max-width:65ch}
+.mail{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:12px}
+.mailhead{font-size:14px;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:12px}
+.mailhead b{color:var(--ink)}
+.mailbody{white-space:pre-wrap;max-width:65ch}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line)}
+td{vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;white-space:nowrap}
+td.num{font-family:var(--mono);font-size:14px;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+th.num{text-align:right}
+td.miss{color:var(--bad)}
+.callout{background:var(--mango-soft);border-radius:10px;padding:10px 14px;margin:14px 0 0;font-weight:600}
+.reviews{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.review{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:15px}
+.review small{display:block;color:var(--muted);margin-top:6px}
+.btn{background:var(--brand);color:var(--brand-ink);border:0;border-radius:8px;padding:9px 16px;font-weight:700;cursor:pointer}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:none;color:var(--brand);border:1px solid var(--brand)}
+.tasks{display:flex;flex-direction:column;gap:12px}
+.task{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:grid;grid-template-columns:28px 1fr;gap:12px}
+.task.done{border-color:var(--good)}
+.tick{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:13px;color:var(--muted)}
+.task.done .tick{background:var(--good);border-color:var(--good);color:#fff}
+.task h3{margin:0 0 4px;font:700 17px/1.3 var(--display)}
+.task p{margin:0 0 10px;color:var(--muted);max-width:65ch}
+.task > div{min-width:0}
+.hintbox{font-size:14.5px;background:var(--mango-soft);border-radius:8px;padding:6px 12px;margin:0 0 10px}
+.hintbox summary{cursor:pointer;font-weight:700}
+textarea{width:100%;min-height:130px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--bg);resize:vertical}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.hint{font-size:13px;color:var(--muted)}
+.submitted{white-space:pre-wrap;background:var(--bg);border-radius:8px;padding:10px 12px;font-size:15px}
+/* chat */
+.chat{display:flex;flex-direction:column;height:100%}
+.chathead{display:flex;gap:12px;align-items:center;padding-block:14px;border-bottom:1px solid var(--line);background:var(--panel);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.chathead h2{margin:0;font-size:18px}
+.chathead small{color:var(--muted)}
+.msgs{flex:1;overflow-y:auto;padding-block:18px;display:flex;flex-direction:column;gap:10px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.msg{max-width:min(560px,85%);padding:9px 13px;border-radius:12px;white-space:pre-wrap;font-size:15.5px;background:var(--panel);border:1px solid var(--line);align-self:flex-start;overflow-wrap:anywhere}
+.msg.me{align-self:flex-end;background:var(--me);border-color:transparent}
+.msg.sys{align-self:center;background:none;border:0;color:var(--muted);font-size:13px;text-align:center}
+.compose{display:flex;gap:10px;padding-block:12px;border-top:1px solid var(--line);background:var(--panel);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.compose textarea{min-height:46px;height:46px;flex:1}
+.attach{background:none;border:1px solid var(--line);border-radius:8px;width:46px;flex:none;cursor:pointer;font-size:18px}
+.attach:hover{border-color:var(--brand)}
+.attach.on{border-color:var(--bad);color:var(--bad)}
+.micbtn{background:none;border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer}
+.pending{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding-block:8px;border-top:1px solid var(--line);background:var(--panel);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.pending img{height:56px;max-width:100px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
+.thumb{position:relative;display:inline-block}
+.thx{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:0;background:var(--bad);color:#fff;font-size:13px;line-height:20px;cursor:pointer;padding:0}
+.mimg{display:block;max-width:100%;max-height:260px;margin-top:8px;border-radius:8px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.useb{align-self:flex-start;background:none;border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:13px;color:var(--brand);cursor:pointer}
+.useb:hover{border-color:var(--brand)}
+.note{font-size:13px;color:var(--bad);padding:0 16px 8px}
+/* progress */
+.verdict{font:600 19px/1.4 var(--display);background:var(--mango-soft);border-radius:12px;padding:14px 18px}
+ul.clean{padding-left:20px;margin:6px 0}
+.nextbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--mango-soft);border-bottom:1px solid var(--line);padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.nextbar .btn{padding:6px 16px}
+.toast{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;align-items:center;background:var(--panel);border:2px solid var(--mango);border-radius:12px;padding:10px 14px;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.25);max-width:calc(100% - 32px);text-align:left}
+.empty{background:var(--panel);border:1px dashed var(--line);border-radius:12px;padding:20px;margin-top:18px}
+.empty h2{margin-top:0}
+.overview{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:20px}
+.big{display:flex;flex-direction:column;gap:2px}
+.big .n{display:flex;align-items:baseline;gap:6px}
+.big .n span{font:800 56px/1 var(--display);color:var(--brand)}
+.big small{color:var(--muted);font-family:var(--mono)}
+.overview .verdict{flex:1;min-width:240px}
+.practice{display:inline-flex;align-items:center;gap:6px;font:700 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--warn);color:var(--warn);border-radius:6px;padding:2px 8px}
+.bars{display:flex;flex-direction:column;gap:12px}
+.bar .bl{display:flex;justify-content:space-between;gap:10px}
+.bn{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.track{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin:5px 0}
+.fill{height:100%;background:var(--mango);border-radius:6px}
+.fill.lo{background:var(--bad)} .fill.hi{background:var(--good)}
+.bar p{margin:0;font-size:14.5px;color:var(--muted)}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:22px}
+.col{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-width:0}
+.col.good{border-top:4px solid var(--good)} .col.fix{border-top:4px solid var(--bad)}
+.col h3{margin:0;font:700 17px var(--display)}
+.tfb{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:10px}
+.tfb summary{cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.cmp{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.cmp > div{min-width:0}
+.k{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.submitted.ideal{border-left:3px solid var(--good)}
+.lib{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.res{display:flex;flex-direction:column;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:inherit;text-decoration:none}
+.res:hover{border-color:var(--brand)}
+.res small{color:var(--muted)} .res p{margin:4px 0 0;font-size:14.5px;color:var(--muted)}
+.rt{align-self:flex-start;font:700 11px var(--mono);background:var(--me);color:var(--brand);border-radius:6px;padding:1px 8px;margin-bottom:4px}
+.rt.w{background:var(--mango-soft);color:var(--ink)}
+.drill{background:var(--mango-soft);border-radius:12px;padding:12px 16px;margin-top:14px}
+/* setup + planning */
+.hero{display:flex;flex-direction:column;gap:6px;margin-bottom:22px}
+.hero h1{font-size:40px}
+.hero .kick{font:500 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--brand)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-weight:700}
+#jobin{min-height:150px}
+.levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.lvl{display:flex;flex-direction:column;gap:4px;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;min-width:0}
+.lvl b{font:700 17px var(--display)}
+.lvl span{font-size:14px;color:var(--muted)}
+.lvl[aria-pressed="true"]{border:2px solid var(--brand);background:var(--me)}
+.flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:26px}
+.flow div{border-top:2px solid var(--line);padding-top:8px;font-size:14.5px;color:var(--muted);min-width:0}
+.flow b{display:block;color:var(--ink);font-family:var(--display)}
+.resume{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:22px}
+.steps{display:flex;flex-direction:column;gap:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.step{display:grid;grid-template-columns:30px 1fr;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.step:last-child{border-bottom:0}
+.step .ic{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font:700 13px var(--mono);border:2px solid var(--line);color:var(--muted)}
+.step.run .ic{border-color:var(--mango);color:var(--mango)}
+.step.ok .ic{background:var(--good);border-color:var(--good);color:#fff}
+.step.bad .ic{background:var(--bad);border-color:var(--bad);color:#fff}
+.step b{display:block}
+.step div{min-width:0}
+.checks{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.ck{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font-size:14.5px}
+.pill{font:700 11px var(--mono);letter-spacing:.06em;border-radius:5px;padding:2px 7px;text-transform:uppercase;white-space:nowrap}
+.pill.pass{background:var(--good);color:#fff} .pill.warn{background:var(--mango-soft);color:var(--warn);border:1px solid var(--warn)} .pill.fail{background:var(--bad);color:#fff}
+.ck small{display:block;color:var(--muted)}
+.flag{border:1px solid var(--warn);background:var(--mango-soft);border-radius:12px;padding:12px 16px;margin-bottom:16px}
+.ready{background:var(--panel);border:2px solid var(--good);border-radius:12px;padding:16px 18px;margin-top:16px}
+.ready h2{margin-top:0}
+pre.plan{white-space:pre-wrap;overflow-wrap:anywhere;font:12.5px/1.5 var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;max-height:420px;overflow:auto}
+.dots{animation:blink 1.2s steps(4,end) infinite}
+@keyframes blink{50%{opacity:.35}}
+@media (max-width:720px){
+  .two,.cmp,.lib,.levels,.flow{grid-template-columns:1fr}
+  .app{grid-template-columns:1fr;grid-template-rows:auto auto 1fr}
+  .app.solo{grid-template-rows:auto 1fr}
+  nav{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:8px max(16px,env(safe-area-inset-left,0px))}
+  .navlabel{display:none}
+  .navbtn{width:auto;flex:none}
+  .who small{display:none}
+  h1{font-size:25px} .hero h1{font-size:30px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="app solo" id="app">
+  <header>
+    <div class="logo">vibe<span>work</span> <span class="trytag">TRY</span></div>
+    <div class="role" id="rolebar">Vibe check any job</div>
+    <div class="hdr-r">
+      <div class="clock" id="clock" hidden>09:00 AM</div>
+      <button class="reset" id="restart" type="button" hidden>Restart day</button>
+      <button class="reset" id="newjob" type="button" hidden>New job</button>
+    </div>
+  </header>
+  <nav id="nav" aria-label="Workspace"></nav>
+  <main id="main"></main>
+</div>
+
+<script>
+/* ============ constants ============ */
+const KEY="vibework-try-v1";
+const LEVELS={
+  beginner:{label:"Beginner",blurb:"Clean data, helpful colleagues, a hint on every task.",pulls:25,colleagues:3},
+  medium:{label:"Medium",blurb:"Realistic data, one pushy stakeholder, no hints.",pulls:18,colleagues:4},
+  advanced:{label:"Advanced",blurb:"Messy data, tough stakeholders, conflicting asks.",pulls:12,colleagues:5}
+};
+const LEVEL_RULES={
+  beginner:"Boss plus exactly 3 colleagues. Clean, round numbers; dashboard of 5–7 rows. Colleagues are cooperative and answer slightly vague questions generously. The twist is a simple, clearly risky request that a careful beginner can turn down with one fact. Every task has a 'hint' field: one friendly sentence on how to approach it, never the answer.",
+  medium:"Boss plus exactly 4 colleagues. Realistic numbers; dashboard of 7–9 rows. The info source needs precise questions. The twist sender pushes back once before accepting a measured alternative. No 'hint' fields.",
+  advanced:"Boss plus exactly 5 colleagues. Messy, realistic data; dashboard of 9–12 rows, including one average that hides a split and one figure with a data-quality problem (the info source can reveal the problem as a hidden fact). Two colleagues have conflicting agendas, the boss is demanding and short on time, the brief is slightly ambiguous, and the twist has a tight deadline and pushes back twice. No 'hint' fields."
+};
+const PALETTE=["#3b2fb8","#1f8a55","#d0661f","#b0306b","#2a6fa8","#6b5b16","#0f766e","#7c3aed"];
+const EXAMPLES=["Customer Support Executive at a food delivery app","Social Media Marketing Executive","Retail Store Manager","Recruiter (tech hiring)","Supply Chain Analyst","Event Planner for weddings"];
+/* well-known real names that must not appear in a plan. Case-sensitive, whole words. Ambiguous everyday words (Apple, Shell, Target, Visa…) are left to the AI review. */
+const BRANDS=["Flipkart","Zomato","Swiggy","Instamart","Blinkit","Zepto","BigBasket","Dunzo","JioMart","Reliance","Tata","Infosys","Wipro","TCS","HCLTech","Cognizant","Accenture","Deloitte","KPMG","PwC","McKinsey","BCG","Bain & Company","Capgemini","Tech Mahindra","Alphabet","Netflix","Spotify","Uber","Airbnb","Paytm","PhonePe","Razorpay","CRED","BYJU'S","Byju's","Byjus","Unacademy","Vedantu","upGrad","PhysicsWallah","Nykaa","Myntra","AJIO","Meesho","Lenskart","Mamaearth","boAt","Rapido","OYO","MakeMyTrip","Goibibo","IndiGo","Air India","Vistara","SpiceJet","Akasa","HDFC","ICICI","SBI","Axis Bank","Kotak","Bajaj Finserv","Airtel","Jio","Vodafone","Mahindra","Maruti","Hyundai","Toyota","Honda","Tesla","Samsung","Xiaomi","OnePlus","Nokia","Sony","Lenovo","IBM","Intel","Nvidia","NVIDIA","Walmart","Starbucks","McDonald's","Domino's","KFC","Pizza Hut","Haldiram","Amul","Nestle","Nestlé","Unilever","HUL","Britannia","Parle","Dabur","Asian Paints","Pidilite","Titan","Tanishq","Decathlon","IKEA","Zara","Uniqlo","Nike","Adidas","Puma","Coca-Cola","Pepsi","PepsiCo","Red Bull","Mastercard","PayPal","Freshworks","Dream11","Groww","Zerodha","Upstox","Policybazaar","PolicyBazaar","Practo","PharmEasy","Urban Company","Delhivery","Blue Dart","DTDC","Shadowfax","Licious","FreshToHome","Country Delight","Chaayos","Third Wave Coffee","Blue Tokai","Cafe Coffee Day","Amazon","Taj Hotels","Marriott","Hilton","Emirates","Lufthansa","Procter & Gamble","P&G","L'Oréal","Colgate","Godrej","Adani","Vedanta","Larsen & Toubro","L&T","Infoedge","Naukri","Glassdoor","Ola Electric","Ather","BookMyShow","Hotstar","JioCinema","ShareChat","InMobi","Mu Sigma","Genpact","Teleperformance","Concentrix","Apollo Hospitals","Narayana Health","Medanta"];
+const PLATFORMS=["Google","Meta","Microsoft","Facebook","Instagram","WhatsApp","LinkedIn","Twitter","YouTube","Shopify","Salesforce","HubSpot","Excel","Canva","Figma"];
+const BLOCK_KW=/\b(doctor|physician|surgeon|nurse|nursing|midwife|pharmacist|dentist|an(?:a)?esthe\w*|paramedic|radiologist|psychiatrist|psychologist|physiotherapist|medical officer|lawyer|advocate|attorney|solicitor|barrister|legal counsel|judge|pilot|co-?pilot|first officer|air traffic|aircraft maintenance|police|armed guard|security guard)\b/i;
+
+/* ============ state ============ */
+function fresh(){return {phase:"setup",input:"",level:"beginner",screen:null,gen:null,bundle:null,report:null,game:null}}
+let S; try{S=JSON.parse(localStorage.getItem(KEY))||fresh()}catch(e){S=fresh()}
+if(!S||!S.phase) S=fresh();
+if(S.phase==="gen"&&S.gen&&S.gen.status==="running"){S.gen.status="interrupted"}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){try{const c=JSON.parse(JSON.stringify(S)); if(c.game) Object.values(c.game.threads).forEach(t=>t.forEach(m=>{if(m.imgs){delete m.imgs; m.t+=" [image]"}})); localStorage.setItem(KEY,JSON.stringify(c))}catch(e2){}}}
+const B=()=>S.bundle, G=()=>S.game;
+
+let sample=null, sampleReady=false, busy=false, genCtl=null;
+let imgOK=false, imgMax=4;
+(async()=>{try{sample=await window.claude?.use?.("sample")}catch(e){sample=null} if(sample){try{const l=await sample.limits(); imgOK=!!(l&&l.images); if(imgOK) imgMax=Math.max(1,Math.min(10,l.images.maxCount||4))}catch(e){imgOK=false}} sampleReady=true; render()})();
+
+/* ============ helpers ============ */
+const $=(h)=>{const t=document.createElement("template");t.innerHTML=h.trim();return t.content.firstElementChild};
+const esc=(s)=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ID=(s)=>String(s==null?"":s).toLowerCase().replace(/[^a-z0-9_-]/g,"");
+function copyFor(c){
+  return ({not_granted:"Claude access wasn't allowed for this page. Reload and allow it to play.",
+    rate_limited:"Too many requests too fast, or you've hit a usage limit. Wait a minute and try again.",
+    session_expired:"You've been signed out of Claude. Sign in again and retry.",
+    refused:"That request couldn't be answered. Try wording it differently.",
+    sampling_disabled:"Claude isn't available on this account.",
+    prompt_too_large:"That's too much text. Shorten the job post and try again.",
+    invalid_json:"The AI's answer came back garbled. Try again."})[c]||"The reply didn't come through. Try again.";
+}
+const ROLE=()=>B()?.track?.role||"professional";
+const castOf=(id)=>(B()?.track?.cast||[]).find(c=>c.id===id);
+const charOf=(id)=>(B()?.day?.characters||[]).find(c=>c.id===id);
+const taskOf=(id)=>(B()?.day?.tasks||[]).find(t=>t.id===id);
+const bossId=()=>{const t=(B()?.day?.tasks||[]).find(x=>x.kind==="submission"); return t?t.submit_to:(B()?.day?.characters?.[0]?.id)};
+const infoId=()=>{const c=(B()?.day?.characters||[]).find(c=>(c.reply_flags||[]).includes("returned_data")); return c?c.id:null};
+function person(id){
+  if(id==="assist") return {name:"Saathi",role:"Your AI assistant",color:"#0e7c6b",ini:"AI"};
+  if(id==="mentor"){const m=B()?.track?.mentor||{}; return {name:m.name||"Mentor",role:m.title||("Your "+ROLE()+" mentor"),color:"#9a3412",ini:(m.name||"M")[0].toUpperCase()}}
+  const c=castOf(id)||{}; return {name:c.name||id,role:c.role||"",color:c.color||"#555",ini:c.initials||String(id||"?")[0].toUpperCase()};
+}
+const first=(id)=>person(id).name.split(" ")[0];
+const av=(id)=>{const p=person(id); return `<span class="av" style="background:${p.color}">${esc(p.ini)}</span>`};
+function hintErr(row,msg){let h=row.querySelector(".err"); if(!h){h=$(`<span class="hint err" style="color:var(--bad)"></span>`);row.append(h)} h.textContent=msg}
+function toMin(t){const m=/^(\d{1,2}):(\d{2})/.exec(String(t||"")); return m?Number(m[1])*60+Number(m[2]):-1}
+function fmtTime(t){const m=toMin(t); if(m<0)return "09:00 AM"; const h=Math.floor(m/60),mm=m%60,ap=h>=12?"PM":"AM",h12=((h+11)%12)+1; return `${String(h12).padStart(2,"0")}:${String(mm).padStart(2,"0")} ${ap}`}
+function lev(a,b){a=a.toLowerCase();b=b.toLowerCase();const d=Array.from({length:a.length+1},(_,i)=>[i]);for(let j=1;j<=b.length;j++)d[0][j]=j;for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[a.length][b.length]}
+function strings(o,skip,out){out=out||[]; if(typeof o==="string") out.push(o); else if(Array.isArray(o)) o.forEach(x=>strings(x,skip,out)); else if(o&&typeof o==="object") for(const k in o){ if(skip.includes(k))continue; strings(o[k],skip,out)} return out}
+const reEsc=(s)=>s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+
+/* ============ prompts: screening, planning, review ============ */
+const SCREEN_PROMPT=(input)=>`You screen inputs for VibeWork, a job simulation where a learner practises one work-day of a job at a fictional company.
+
+INPUT (a pasted job post or a typed role):
+"""${input}"""
+
+Reply with only JSON:
+{"is_job":true,"role_title":"short normalised job title","industry":"industry in a few words","location_hint":"country or city if stated, else India","regulation":"none|flag|block","reason":"one line on the regulation call","employer_names":["the employer's own company, brand and product names, and any competitors named. NOT work tools or ad platforms (Google Ads, Meta, YouTube, Excel, a CRM), and NOT ordinary words"],"adjacent_roles":["3 nearby roles that are NOT licensed practice"]}
+
+is_job is false if the input isn't a job or role at all, if it is only a web link, or if it is too vague to know what the job is. Then put a one-line explanation in "reason".
+regulation:
+- "block": the core of the job is licensed professional practice where mistakes harm people or a licence is legally required to do the work: clinical care (doctor, nurse, pharmacist, therapist, paramedic), giving legal advice or representation (lawyer, advocate), flying, controlling or certifying aircraft, armed security or policing, and similar safety-critical licensed practice.
+- "flag": the role sits in a regulated area but the job itself is not licensed practice (bank compliance, insurance claims, pharma sales, healthcare or hospital operations, legal operations, investment or tax work, construction safety, audit).
+- "none": everything else.
+A business role at a hospital, law firm or airline (marketing, HR, operations, product) is "flag" or "none", never "block".`;
+
+const PLAN_PROMPT=(scr,input,level,issues)=>{
+  const names=(scr.employer_names||[]).filter(Boolean).join(", ")||"(none)";
+  const pulls=LEVELS[level].pulls;
+  return `You are the senior scenario designer at VibeWork, a job simulation where a learner spends one realistic work-day at a fictional company, working with AI colleagues, and is then scored. Design ONE work-day for this job.
+
+THE JOB (as the learner gave it):
+"""${input}"""
+Role: ${scr.role_title}. Industry: ${scr.industry}. Location: ${scr.location_hint||"India"}.
+${scr.regulation==="flag"?"REGULATED AREA: keep every task on the workplace side (analysis, communication, prioritisation, stakeholders, operations). Never ask the learner to make a licensed professional decision; colleagues who hold the licence own those.\n":""}
+LEVEL: ${level.toUpperCase()}. ${LEVEL_RULES[level]}
+
+PRINCIPLES
+- Experience, not knowledge: the learner must DO the job (diagnose, ask, push back, decide, write), never answer quiz questions.
+- The day revolves around one specific, realistic problem a new joiner in this role would face in their first weeks. The best answer depends on hidden facts the learner must dig out by asking colleagues precise questions.
+- Fictional company in this industry. Default to India, Indian rupees with lakh and crore, and Indian names, unless the job is clearly elsewhere (then use that place's currency and names).
+- No real company, brand, product, school or real person names anywhere, and no names that sound close to one (for example "Airbell" is too close to a real telecom). Do not reuse these names from the job post: ${names}. Real work platforms and tools may be named as tools of the trade (for example Meta Ads, Google Ads, YouTube, Excel, a CRM), never as the employer, a competitor or a customer.
+- Every number must agree everywhere: dashboard, emails, hidden facts, expected answers. Record them in "ledger".
+- The mid-day twist comes from a colleague with a strong agenda; handling it well depends on the hidden facts.
+- Keep every text tight. The whole JSON should stay under about 3,000 words.
+
+Reply with only JSON in exactly this shape. Values below are descriptions or examples; replace them all.
+{
+ "track":{
+  "schema_version":"1.0","id":"try-<role-slug>","version":1,"title":"<Role> at <Company>","role":"<Role>",
+  "company":{"name":"<fictional name>","one_liner":"public, 1–2 sentences: what the company does, and that you've just joined as <Role>","world_briefing":"AI-only, 80–150 words: facts every character knows: the company, its size, today's core problem and the baseline numbers on the dashboard"},
+  "days":[{"day":1,"file":"days/day01.json","title":"<day title>"}],
+  "skills":[{"id":"short_id","name":"Skill name","description":"one line"}],
+  "cast":[{"id":"<firstname, lowercase>","name":"Full Name","role":"job title (the boss: '<title>, your boss')","kind":"colleague","cares_about":"public, under 8 words","persona":"AI-only, 2–4 sentences starting 'You are <Name>, <title>.': personality, what they want, their bias or agenda, how they react to pushback","first_day":1}],
+  "mentor":{"name":"first name","title":"Senior <Role>, your mentor","years":12},
+  "style_rules":"How all characters write: short workplace chat, 1–4 lines, natural workplace English for this location, stay in character, never mention AI or a simulation, never coach or hand over answers, no markdown headers.",
+  "learning_library":{"<skill id>":[{"type":"Read or Watch","title":"a real, well-known book, or a topic to watch","by":"author, or YouTube","why":"one line","search":"search query"}]}
+ },
+ "day":{
+  "schema_version":"1.0","track":"<track id>","day":1,"id":"<track id>-d01","version":1,
+  "title":"<day title>","theme":"public one-line subtitle","duration_minutes":[45,75],
+  "skills_focus":["3–4 skill ids"],"practised":["3–4 public lines: what you practise today"],
+  "story_so_far":"This is the player's first day at <Company>.","world_today":"AI-only: what's true today, deadlines","canon_after_day":"AI-only: what is true after today",
+  "public":{
+   "inbox":[{"from":"<boss id>","time":"09:02","subject":"...","body":"the boss's brief, 80–150 words: the problem, why it matters, the deadline, what to send by end of day, who can help"}],
+   "dashboard":{"title":"...","subtitle":"... Red figures miss target.","columns":["Metric","<segment A>","<segment B>","Target"],"rows":[{"cells":["metric","value","value","target"],"miss":true}],"notes":["one-line callout"]},
+   "reviews":[{"text":"a short voice from a customer, client, user, candidate or whoever this role serves","meta":"segment · ★★"}],
+   "documents":[{"title":"...","body":"..."}]
+  },
+  "characters":[{"id":"<cast id>","available":"start or locked","opener":"first chat line, or null when locked","today":"AI-only: their brief for today","hidden_facts":[{"id":"kebab-id","fact":"a specific fact with numbers","reveal_if":"what the learner must ask to get it"}],"limits":{"data_pulls":${pulls}},"reply_flags":["returned_data"]}],
+  "group_chats":[],
+  "tasks":[
+   {"id":"t1","title":"...","minutes":20,"kind":"submission","submit_to":"<boss id>","description":"a first read, diagnosis or plan that suits this role","hint":"beginner only","done_when":{"submitted":"t1"}},
+   {"id":"t2","title":"Ask <info source first name> for ...","minutes":15,"kind":"chat","description":"...","hint":"beginner only","done_when":{"counter_at_least":{"counter":"<info id>.data_pulls","value":1}}},
+   {"id":"t3","title":"Handle the twist","minutes":10,"kind":"chat","description":"Something will land in your messages during the day. Deal with it.","hint":"beginner only","done_when":{"messages_sent":{"to":"<twist id>","at_least":1}}},
+   {"id":"t4","title":"End-of-day ...","minutes":20,"kind":"submission","submit_to":"<boss id>","description":"the real deliverable: what's going on and the evidence, the first move, what not to do yet, the asks","hint":"beginner only","done_when":{"submitted":"t4"}}
+  ],
+  "triggers":[
+   {"id":"boss-on-t1","when":{"submitted":"t1"},"do":[{"open":"chat:<boss id>"},{"ai_reply":{"from":"<boss id>","direction":"React in 2–3 lines: push on the weakest point and send them to <info source> for facts."}}]},
+   {"id":"twist","when":{"any":[{"all":[{"submitted":"t1"},{"counter_at_least":{"counter":"<info id>.data_pulls","value":1}}]},{"counter_at_least":{"counter":"<info id>.data_pulls","value":2}}]},"do":[{"unlock":"<twist id>"},{"message":{"from":"<twist id>","text":"the twist message in their voice, with a deadline"}}]},
+   {"id":"boss-on-t4","when":{"submitted":"t4"},"do":[{"open":"chat:<boss id>"},{"ai_reply":{"from":"<boss id>","direction":"Reply with ONE sharp probing question about the weakest point."}}]}
+  ],
+  "clock":{"start":"09:00","end":"17:30","steps":[{"when":{"submitted":"t1"},"time":"11:30"},{"when":{"counter_at_least":{"counter":"<info id>.data_pulls","value":1}},"time":"13:00"},{"when":{"trigger_fired":"twist"},"time":"14:15"},{"when":{"messages_sent":{"to":"<twist id>","at_least":1}},"time":"15:00"},{"when":{"submitted":"t4"},"time":"17:30"}]},
+  "scoring":{"strong_player":"what a strong player does today","expected_answers":{"t1":"...","t2":"the precise questions, each with a comparison","t3":"...","t4":"..."},"common_mistakes":["..."],"senior_view":"3–4 sentences","drill":"one 10-minute exercise"}
+ },
+ "ledger":[{"id":"snake_id","label":"what it is, with its unit, e.g. 'Overall 30-day repeat rate (%)'","value":14},{"id":"...","label":"...","value":16,"formula":"(rate_a*customers_a + rate_b*customers_b)/(customers_a+customers_b)"}],
+ "claims":[{"text":"the comparison in plain words, e.g. 'Late first orders repeat far less than on-time ones'","left":"ledger id or formula over ledger ids","op":">","right":"ledger id, number or formula"}]
+}
+
+RULES FOR THE CAST
+- skills: exactly 6 skills that matter for this role. learning_library: one item for each skill id.
+- day.characters holds the boss plus the number of colleagues the level sets. Every character id also appears in track.cast with the same id; ids are unique lowercase first names.
+- Exactly one "info source" (an analyst, a records keeper, or whoever holds the facts in this role) carries "reply_flags":["returned_data"] and "limits":{"data_pulls":${pulls}}, and 4–6 hidden facts that hold the answer. Every other character omits both fields.
+- Other colleagues hold 0–3 hidden facts each, from their own area.
+- Exactly one colleague is the twist sender: "available":"locked", "opener":null, unlocked only by the twist trigger. Their persona and "today" say how hard they push back and what measured alternative they'd accept.
+- The boss nudges and asks for evidence and never gives the answer. The boss is "available":"start".
+
+RULES FOR THE NUMBERS
+- ledger: 8–16 entries covering every key number on the dashboard and in the hidden facts, as plain numbers (a percentage as 14, not 0.14; money as 210, not "₹210"; counts in full, 160000).
+- At least 4 entries carry a "formula" over other ledger ids using only + - * / and parentheses. Each formula must compute to that entry's value (within rounding): totals, weighted averages, differences, cost × volume.
+- Numbers written in the dashboard, emails, facts and expected answers must equal the ledger values, formatted for reading ("1,60,000", "₹210", "14%").
+- claims: 3–6 entries, one for EVERY comparison or verdict the story, hidden facts, twist and expected answers rely on ("X is above the ceiling", "segment A converts better than B", "the campaign costs more than it earns"). op is one of > < >= <=. Work out each one before you write the story; if a claim is false with your numbers, change the numbers or the story until it is true.
+${issues&&issues.length?`\nA PREVIOUS DRAFT FAILED THESE CHECKS. Fix every one:\n- ${issues.join("\n- ")}\n`:""}`;
+};
+
+const AUDIT_PROMPT=(b,level)=>`You are a strict QA reviewer for VibeWork, a job simulation. Below is a generated work-day plan (JSON) for the role "${b.track.role}" at ${level} level. Review it.
+
+Check:
+1. Numbers agree between the dashboard, emails, hidden facts, expected answers and the ledger.
+2. Any real company, brand, product, institution or real person name used as the employer, a competitor, a customer or a character, or a fictional name confusingly close to a real brand. Real work platforms and tools used as tools (ad platforms, spreadsheets, CRM) are fine. Real books in learning_library are fine.
+3. The twist can be handled well only with the hidden facts, and the expected answers follow from those facts.
+4. It fits the ${level} level.
+5. The day is realistic for this role.
+6. No task asks the learner to make a licensed professional decision (medical, legal, aviation).
+
+Reply with only JSON: {"ok":true,"issues":[{"severity":"major or minor","text":"one specific sentence"}]}
+"major" ONLY for: the expected answer is wrong or contradicts the facts; numbers contradict each other; the twist or an expected answer cannot be reached from the hidden facts at all; a real brand as employer, competitor or character; a licensed professional decision. Everything else is "minor": clarity, nuance, extra angles, timing details, polish. Report at most 6 issues. "ok" is false if any issue is major.
+
+PLAN:
+${JSON.stringify({track:b.track,day:b.day,ledger:b.ledger,claims:b.claims||[]})}`;
+
+const REPAIR_PROMPT=(b,level,issues)=>`You are fixing a VibeWork work-day plan (role: ${b.track.role}, level: ${level}) that failed quality checks. Fix EVERY issue below.
+
+How to fix:
+- Change only what is needed. Keep the structure, ids, cast, tasks and triggers.
+- If a conclusion doesn't follow from the numbers, either change the numbers so it does, or change the conclusion AND every text that relies on it: hidden facts, the twist message, expected answers, strong_player, common_mistakes, senior_view, world_briefing.
+- Keep the ledger and claims in sync with every number and comparison. Every claim must be true.
+- No real company, brand or person names.
+
+ISSUES:
+- ${issues.join("\n- ")}
+
+Reply with only the full corrected JSON object with keys track, day, ledger and claims.
+
+PLAN:
+${JSON.stringify({track:b.track,day:b.day,ledger:b.ledger,claims:b.claims||[]})}`;
+
+/* ============ normalise + automatic checks ============ */
+function normalize(b,level){
+  if(!b||typeof b!=="object"||Array.isArray(b)) return null;
+  const t=b.track=(b.track&&typeof b.track==="object")?b.track:{}, d=b.day=(b.day&&typeof b.day==="object")?b.day:{};
+  t.cast=Array.isArray(t.cast)?t.cast:[]; d.characters=Array.isArray(d.characters)?d.characters:[];
+  t.cast.forEach((c,i)=>{c.id=ID(c.id); c.color=PALETTE[i%PALETTE.length]; c.initials=String(c.name||c.id).split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join("")});
+  d.characters.forEach(c=>{c.id=ID(c.id); c.hidden_facts=Array.isArray(c.hidden_facts)?c.hidden_facts.filter(f=>f&&f.fact):[]; if(c.limits&&c.limits.data_pulls!=null) c.limits.data_pulls=LEVELS[level].pulls; if(!Array.isArray(c.reply_flags)) delete c.reply_flags; if(c.available!=="locked") c.available="start"});
+  d.tasks=Array.isArray(d.tasks)?d.tasks:[]; d.triggers=Array.isArray(d.triggers)?d.triggers:[];
+  d.tasks.forEach(x=>{if(x.submit_to) x.submit_to=ID(x.submit_to); if(level!=="beginner") delete x.hint});
+  d.public=(d.public&&typeof d.public==="object")?d.public:{}; ["inbox","reviews","documents"].forEach(k=>{if(!Array.isArray(d.public[k]))d.public[k]=[]});
+  const db=d.public.dashboard=(d.public.dashboard&&typeof d.public.dashboard==="object")?d.public.dashboard:{};
+  if(!Array.isArray(db.columns))db.columns=[]; if(!Array.isArray(db.rows))db.rows=[]; if(!Array.isArray(db.notes))db.notes=[];
+  d.group_chats=[]; d.clock=d.clock||{start:"09:00",end:"17:30",steps:[]}; if(!Array.isArray(d.clock.steps)) d.clock.steps=[];
+  d.scoring=d.scoring||{}; d.scoring.expected_answers=d.scoring.expected_answers||{};
+  b.ledger=Array.isArray(b.ledger)?b.ledger:[]; b.claims=Array.isArray(b.claims)?b.claims:[];
+  const fix=(c)=>{ if(!c||typeof c!=="object") return;
+    if(c.counter_at_least&&c.counter_at_least.counter){const [a,...r]=String(c.counter_at_least.counter).split("."); c.counter_at_least.counter=ID(a)+"."+r.join(".").toLowerCase()}
+    if(c.messages_sent) c.messages_sent.to=ID(c.messages_sent.to);
+    (c.all||[]).forEach(fix); (c.any||[]).forEach(fix) };
+  d.tasks.forEach(x=>fix(x.done_when)); d.clock.steps.forEach(s=>fix(s.when));
+  d.triggers.forEach(tr=>{ fix(tr.when); (Array.isArray(tr.do)?tr.do:[]).forEach(a=>{ if(!a) return; if(a.unlock) a.unlock=ID(a.unlock); if(a.message&&a.message.from) a.message.from=ID(a.message.from); if(a.ai_reply&&a.ai_reply.from) a.ai_reply.from=ID(a.ai_reply.from); if(typeof a.open==="string"&&a.open.startsWith("chat:")) a.open="chat:"+ID(a.open.slice(5)) }) });
+  d.public.inbox.forEach(m=>{ if(m) m.from=ID(m.from) });
+  t.skills=Array.isArray(t.skills)?t.skills:[]; t.learning_library=t.learning_library||{};
+  return b;
+}
+function evalFormula(src,vals){
+  const s=String(src); const toks=s.match(/[A-Za-z_][A-Za-z0-9_]*|\d+(?:\.\d+)?|[-+*/()]/g)||[];
+  if(toks.join("")!==s.replace(/\s+/g,"")) throw new Error("uses characters other than ids, numbers and + - * / ( )");
+  let i=0; const peek=()=>toks[i], next=()=>toks[i++];
+  function expr(){let v=term(); while(peek()==="+"||peek()==="-"){const o=next(); const r=term(); v=o==="+"?v+r:v-r} return v}
+  function term(){let v=fac(); while(peek()==="*"||peek()==="/"){const o=next(); const r=fac(); v=o==="*"?v*r:v/r} return v}
+  function fac(){const t=next(); if(t==="("){const v=expr(); if(next()!==")") throw new Error("missing )"); return v} if(t==="-") return -fac(); if(t===undefined) throw new Error("ends early"); if(/^\d/.test(t)) return parseFloat(t); if(Object.prototype.hasOwnProperty.call(vals,t)) return vals[t]; throw new Error("refers to unknown id "+t)}
+  const v=expr(); if(i<toks.length) throw new Error("has extra symbols"); return v;
+}
+function checkCond(c,ctx,errs,where,depth){
+  depth=depth||0; if(depth>6){errs.push(`${where}: condition nests too deep`);return}
+  if(!c||typeof c!=="object"){errs.push(`${where}: missing condition`);return}
+  if("submitted" in c||"task_done" in c){const id=c.submitted??c.task_done; if(!ctx.tasks.includes(id)) errs.push(`${where}: refers to unknown task "${id}"`); return}
+  if(c.counter_at_least){const m=/^([a-z0-9_-]+)\.(data_pulls|messages|questions)$/.exec(String(c.counter_at_least.counter||"")); if(!m||!ctx.chars.includes(m[1])) errs.push(`${where}: unknown counter "${c.counter_at_least.counter}"`); return}
+  if(c.messages_sent){if(!ctx.chars.includes(ID(c.messages_sent.to))) errs.push(`${where}: messages to unknown person "${c.messages_sent.to}"`); return}
+  if("trigger_fired" in c){if(!ctx.triggers.includes(c.trigger_fired)) errs.push(`${where}: refers to unknown trigger "${c.trigger_fired}"`); return}
+  if(Array.isArray(c.all)){c.all.forEach(x=>checkCond(x,ctx,errs,where,depth+1)); return}
+  if(Array.isArray(c.any)){c.any.forEach(x=>checkCond(x,ctx,errs,where,depth+1)); return}
+  errs.push(`${where}: condition type not in the scenario format`);
+}
+function codeChecks(b,level,scr){
+  const out=[]; const add=(name,errs,warns,okText)=>out.push({name,status:errs.length?"fail":warns.length?"warn":"pass",detail:errs.length?errs.slice(0,4).join("; "):warns.length?warns.slice(0,3).join("; "):okText,errs,warns});
+  const t=b.track, d=b.day;
+  /* 1. format */
+  let e=[],w=[];
+  ["title","theme","story_so_far","world_today","canon_after_day"].forEach(k=>{if(!d[k]) e.push(`day.${k} missing`)});
+  if(!t.company||!t.company.name||!t.company.world_briefing||!t.company.one_liner) e.push("track.company incomplete");
+  if(!t.role) e.push("track.role missing");
+  if(!t.style_rules) e.push("track.style_rules missing");
+  if(t.skills.length!==6) e.push(`needs 6 skills, has ${t.skills.length}`);
+  if(!d.public.inbox.length) e.push("inbox is empty");
+  if(d.public.dashboard.columns.length<2||d.public.dashboard.rows.length<4) e.push("dashboard needs columns and at least 4 rows");
+  d.public.dashboard.rows.forEach((r,i)=>{if(!r||!Array.isArray(r.cells)||r.cells.length!==d.public.dashboard.columns.length) e.push(`dashboard row ${i+1} doesn't match the columns`)});
+  ["t1","t2","t3","t4"].forEach(k=>{if(!d.scoring.expected_answers[k]) e.push(`expected answer for ${k} missing`)});
+  if(!d.scoring.strong_player) e.push("scoring.strong_player missing");
+  add("Format matches our scenario format",e,w,"track and day fields all present");
+  /* 2. cast */
+  e=[];w=[];
+  const chars=d.characters.map(c=>c.id), boss=bossId();
+  const colleagues=chars.length-1;
+  if(colleagues<3||colleagues>5) e.push(`needs a boss and 3–5 colleagues, has ${colleagues} colleagues`);
+  if(colleagues!==LEVELS[level].colleagues) w.push(`${level} level expects ${LEVELS[level].colleagues} colleagues, has ${colleagues}`);
+  if(new Set(chars).size!==chars.length) e.push("two characters share an id");
+  d.characters.forEach(c=>{const k=castOf(c.id); if(!k) e.push(`"${c.id}" has no cast entry`); else if(!k.persona) e.push(`${k.name||c.id} has no persona`)});
+  if(!chars.includes(boss)) e.push("the boss (who tasks are sent to) isn't in today's cast");
+  else if(charOf(boss).available==="locked") e.push("the boss is locked at the start");
+  const infos=d.characters.filter(c=>(c.reply_flags||[]).includes("returned_data"));
+  if(infos.length!==1) e.push(`needs exactly one info source with returned_data, has ${infos.length}`);
+  else{ if(!infos[0].limits||!infos[0].limits.data_pulls) e.push("info source has no data-pull limit"); if(infos[0].hidden_facts.length<4) e.push(`info source holds ${infos[0].hidden_facts.length} hidden facts, needs at least 4`) }
+  const totalFacts=d.characters.reduce((a,c)=>a+c.hidden_facts.length,0);
+  if(totalFacts<5) e.push(`only ${totalFacts} hidden facts in total`);
+  d.characters.forEach(c=>c.hidden_facts.forEach(f=>{if(!f.reveal_if) w.push(`fact "${f.id||"?"}" has no reveal_if`)}));
+  const locked=d.characters.filter(c=>c.available==="locked");
+  if(!locked.length) e.push("no locked twist character");
+  add(`Boss and ${colleagues} colleagues with agendas`,e,w,`${totalFacts} hidden facts; ${infos[0]?(castOf(infos[0].id)||{}).name:"?"} holds the data`);
+  /* 3. tasks + triggers */
+  e=[];w=[];
+  const ctx={tasks:d.tasks.map(x=>x.id),chars,triggers:d.triggers.map(x=>x.id)};
+  if(d.tasks.length!==4) e.push(`needs 4 tasks, has ${d.tasks.length}`);
+  if(new Set(ctx.tasks).size!==ctx.tasks.length) e.push("two tasks share an id");
+  d.tasks.forEach(x=>{
+    if(!x.title||!x.description) e.push(`task ${x.id} needs a title and description`);
+    if(x.kind!=="submission"&&x.kind!=="chat") e.push(`task ${x.id} kind must be submission or chat`);
+    if(x.kind==="submission"&&!chars.includes(x.submit_to)) e.push(`task ${x.id} is sent to unknown "${x.submit_to}"`);
+    if(x.kind==="chat"&&!x.done_when) e.push(`chat task ${x.id} has no done_when`);
+    if(x.done_when){ if(x.done_when.task_done===x.id) e.push(`task ${x.id} depends on itself`); checkCond(x.done_when,ctx,e,`task ${x.id}`) }
+    if(level==="beginner"&&!x.hint) w.push(`task ${x.id} has no beginner hint`);
+  });
+  if(d.tasks.filter(x=>x.kind==="submission").length<2) e.push("needs at least 2 submission tasks");
+  d.triggers.forEach(tr=>{
+    if(!tr.id) e.push("a trigger has no id");
+    checkCond(tr.when,ctx,e,`trigger ${tr.id}`);
+    if(!Array.isArray(tr.do)||!tr.do.length) e.push(`trigger ${tr.id} does nothing`);
+    (tr.do||[]).forEach(a=>{
+      if(a.message){if(!chars.includes(ID(a.message.from))) e.push(`trigger ${tr.id}: message from unknown "${a.message.from}"`); if(!a.message.text) e.push(`trigger ${tr.id}: empty message`)}
+      else if(a.unlock){if(!chars.includes(ID(a.unlock))) e.push(`trigger ${tr.id}: unlocks unknown "${a.unlock}"`)}
+      else if(a.ai_reply){if(!chars.includes(ID(a.ai_reply.from))) e.push(`trigger ${tr.id}: reply from unknown "${a.ai_reply.from}"`)}
+      else if(a.open){const o=String(a.open); if(!(o.startsWith("chat:")&&chars.includes(o.slice(5)))&&!["tasks","dashboard","brief"].includes(o)) e.push(`trigger ${tr.id}: opens unknown screen "${o}"`)}
+      else e.push(`trigger ${tr.id}: action not in the scenario format`);
+    });
+  });
+  locked.forEach(c=>{ if(!d.triggers.some(tr=>(tr.do||[]).some(a=>ID(a.unlock)===c.id||ID(a.message&&a.message.from)===c.id))) e.push(`${(castOf(c.id)||{}).name||c.id} is locked and nothing unlocks them`) });
+  const twist=d.triggers.find(tr=>(tr.do||[]).some(a=>a.message&&locked.some(c=>c.id===ID(a.message.from))));
+  if(!twist) e.push("no mid-day twist message from a locked colleague");
+  (d.clock.steps||[]).forEach((s,i)=>{checkCond(s.when,ctx,e,`clock step ${i+1}`); if(toMin(s.time)<0) e.push(`clock step ${i+1} has a bad time`)});
+  add("4 tasks, triggers and the twist wire up",e,w,`twist from ${twist?first(ID(twist.do.find(a=>a.message).message.from)):"?"}; every reference resolves`);
+  /* 4. numbers */
+  e=[];w=[];
+  const vals={}; let formulas=0, okF=0;
+  b.ledger.forEach(x=>{ if(x&&x.id!=null&&typeof x.value==="number"&&isFinite(x.value)) vals[String(x.id)]=x.value; else if(x) e.push(`ledger "${x.id}" has no numeric value`) });
+  if(b.ledger.length<6) e.push(`ledger has ${b.ledger.length} numbers, needs at least 6`);
+  b.ledger.forEach(x=>{ if(!x||!x.formula) return; formulas++;
+    try{ const v=evalFormula(x.formula,vals); const tol=Math.max(Math.abs(x.value)*0.05,0.6);
+      if(!isFinite(v)) e.push(`"${x.label||x.id}" formula divides by zero`);
+      else if(Math.abs(v-x.value)>tol) e.push(`"${x.label||x.id}" is ${x.value} but its formula gives ${Math.round(v*100)/100}`);
+      else okF++;
+    }catch(err){ e.push(`"${x.label||x.id}" formula ${err.message}`) } });
+  if(formulas<4) e.push(`only ${formulas} formulas tie numbers together, needs 4`);
+  b.ledger.forEach(x=>{ if(x&&/%/.test(x.label||"")&&!/change|growth|vs|differ|gap|uplift|drop/i.test(x.label||"")&&(x.value<0||x.value>100)) e.push(`"${x.label}" is a percentage outside 0–100`) });
+  let okC=0;
+  if(b.claims.length<3) e.push(`only ${b.claims.length} claims check the story's comparisons, needs 3`);
+  b.claims.forEach(c=>{ if(!c) return; const ops={">":(a,z)=>a>z,"<":(a,z)=>a<z,">=":(a,z)=>a>=z,"<=":(a,z)=>a<=z};
+    const f=ops[String(c.op||"").trim()]; if(!f){ e.push(`claim "${c.text}" has an unknown comparison "${c.op}"`); return }
+    try{ const L=evalFormula(String(c.left),vals), R=evalFormula(String(c.right),vals);
+      if(!f(L,R)) e.push(`claim "${c.text}" is false: ${Math.round(L*100)/100} is not ${c.op} ${Math.round(R*100)/100}. Change the numbers or the story and everything that relies on it`); else okC++;
+    }catch(err){ e.push(`claim "${c.text}" ${err.message}`) } });
+  const cellNums=[]; d.public.dashboard.rows.forEach(r=>(r.cells||[]).slice(1).forEach(c=>{const m=String(c).replace(/−/g,"-").match(/-?\d[\d,]*(?:\.\d+)?/); if(m) cellNums.push(parseFloat(m[0].replace(/,/g,"")))}));
+  const ledgerVals=Object.values(vals); const hit=cellNums.filter(n=>ledgerVals.some(v=>Math.abs(v-n)<=Math.max(Math.abs(n)*0.01,0.01))).length;
+  if(cellNums.length&&hit/cellNums.length<0.5) w.push(`only ${hit} of ${cellNums.length} dashboard figures are tracked in the ledger`);
+  add("Numbers and conclusions add up",e,w,`${okF} of ${formulas} formulas and ${okC} of ${b.claims.length} conclusions check out; ${hit} of ${cellNums.length} dashboard figures tracked`);
+  /* 5. brands */
+  e=[];w=[];
+  const text=strings({track:{...t,learning_library:undefined},day:d},["learning_library","color","initials"]).join("\n");
+  const found=new Set();
+  BRANDS.forEach(br=>{ if(new RegExp(`(?<![A-Za-z0-9])${reEsc(br)}(?![A-Za-z0-9])`).test(text)) found.add(br) });
+  (scr&&scr.employer_names||[]).forEach(n=>{ n=String(n||"").trim(); if(n.length>=3&&new RegExp(`(?<![A-Za-z0-9])${reEsc(n)}(?![A-Za-z0-9])`,"i").test(text)) found.add(n) });
+  if(found.size) e.push(`real names found: ${[...found].slice(0,6).join(", ")}`);
+  const cname=String(t.company&&t.company.name||"").replace(/[^A-Za-z]/g,"");
+  if(cname){ const close=BRANDS.concat(PLATFORMS,scr&&scr.employer_names||[]).map(x=>String(x).replace(/[^A-Za-z]/g,"")).filter(x=>x.length>=4).find(x=>{const dd=lev(cname,x); return cname.toLowerCase()===x.toLowerCase()||(cname.length>=5&&dd<=2)||(cname.length<5&&dd<=1)}); if(close) e.push(`company name "${t.company.name}" is too close to a real brand`) }
+  add("No real brands",e,w,`company "${t.company?t.company.name:"?"}" is fictional; no known brands found`);
+  return out;
+}
+
+/* ============ setup → screen → plan → check ============ */
+function linkOnly(t){ const rest=String(t).replace(/https?:\/\/\S+|www\.\S+/gi,"").replace(/\s+/g," ").trim(); return rest.length<25&&/https?:\/\/|www\./i.test(t) }
+const LINK_MSG="I can't open links: the page is sealed off from the internet, and job sites need a login. Open the job, copy the description text, and paste it here. Or just type the role.";
+async function startGeneration(){
+  const input=S.input.trim().slice(0,6000);
+  if(!sample){render();return}
+  if(linkOnly(input)){ S.phase="setup"; S.setupErr=LINK_MSG; save(); render(); return }
+  S.screen=null; S.bundle=null; S.report=null; S.game=null;
+  S.gen={status:"running",step:"screen",attempt:0,chars:0,checks:[],audit:null,err:null,stage:{}};
+  S.phase="gen"; save(); render();
+  genCtl=new AbortController();
+  let scr;
+  try{ scr=await sample.json(SCREEN_PROMPT(input),{modelTier:"quick",signal:genCtl.signal}) }
+  catch(e){ return genFail(e.code==="cancelled"?"Stopped.":copyFor(e.code)) }
+  if(!scr||typeof scr!=="object") return genFail("The job couldn't be read. Try again.");
+  if(BLOCK_KW.test(scr.role_title||"")&&scr.regulation==="none") scr.regulation="flag";
+  S.screen=scr; S.gen.stage.screen="ok";
+  if(scr.is_job===false){ S.gen.status="failed"; S.gen.structural=true; S.gen.err=(scr.reason?scr.reason+" ":"")+"Paste the job description text, or type a role such as 'Retail Store Manager'."; save(); render(); return }
+  if(scr.regulation==="block"){ S.phase="blocked"; S.gen.status="done"; save(); render(); return }
+  save(); render();
+  let issues=null, last=null, garbled=0;
+  for(let attempt=1;attempt<=2+garbled;attempt++){
+    const mode=(attempt>1&&last&&!last.structural&&last.bundle)?"repair":"fresh";
+    S.gen.attempt=attempt; S.gen.mode=mode; S.gen.step="plan"; S.gen.chars=0; S.gen.checks=[]; S.gen.audit=null; save(); render();
+    let b;
+    try{
+      b=await sample.json(mode==="repair"?REPAIR_PROMPT(last.bundle,S.level,issues):PLAN_PROMPT(scr,input,S.level,issues),{modelTier:"default",cache:false,signal:genCtl.signal,onText:({text})=>{S.gen.chars=text.length; const el=document.getElementById("genchars"); if(el) el.textContent=text.length.toLocaleString("en-IN")}});
+    }catch(e){
+      if(e.code==="cancelled") return genFail("Stopped.");
+      if(e.code==="invalid_json"){ b=salvage(e.text);
+        if(!b){ if(garbled<1){ garbled++; issues=(issues||[]).concat(["Your last reply was not valid JSON or was cut off. Reply with only the JSON object, and keep every text field short."]); continue }
+          return genFail("The AI's answer came back garbled twice. Try again; shorter job posts help.") } }
+      else return genFail(copyFor(e.code));
+    }
+    S.bundle=normalize(b,S.level);
+    if(!S.bundle){ issues=["The reply was not one JSON object with track, day and ledger."]; continue }
+    S.gen.step="check"; save(); render();
+    const checks=codeChecks(S.bundle,S.level,scr);
+    const structural=checks.slice(0,3).some(c=>c.status==="fail");
+    let audit=null;
+    if(!structural){
+      try{ audit=await sample.json(AUDIT_PROMPT(S.bundle,S.level),{modelTier:"default",cache:false,signal:genCtl.signal}) }
+      catch(e){ if(e.code==="cancelled") return genFail("Stopped."); audit={skipped:true} }
+    }
+    const majors=(audit&&Array.isArray(audit.issues)?audit.issues:[]).filter(x=>x&&x.severity==="major").map(x=>String(x.text));
+    const minors=(audit&&Array.isArray(audit.issues)?audit.issues:[]).filter(x=>x&&x.severity!=="major").map(x=>String(x.text));
+    checks.push({name:"AI review: realism, level, consistency",status:audit&&audit.skipped?"warn":structural?"warn":majors.length?"fail":minors.length?"warn":"pass",
+      detail:audit&&audit.skipped?"The AI review didn't run; the automatic checks still did.":structural?"Skipped until the structure is fixed.":majors.length?majors.slice(0,3).join(" "):minors.length?minors.slice(0,2).join(" "):"No issues found.",errs:majors,warns:minors});
+    S.gen.checks=checks; last={checks,structural,bundle:S.bundle};
+    const fails=checks.filter(c=>c.status==="fail");
+    if(!fails.length){ S.gen.status="ready"; S.gen.step="ready"; save(); render(); return }
+    issues=fails.flatMap(c=>c.errs).slice(0,14);
+    if(attempt===1){ S.gen.regen=issues.length; S.gen.firstFails=issues.slice(0,6); save(); render() }
+  }
+  S.gen.status="failed"; S.gen.step="failed"; S.gen.structural=!!(last&&last.structural);
+  S.gen.err=S.gen.structural?"The plan still breaks the format after one retry, so it can't be played. Try again; plans differ each time.":"The plan still has issues after one retry. You can play it anyway (issues are listed above) or try again.";
+  save(); render();
+}
+function salvage(text){
+  if(!text) return null; let t=String(text).replace(/```(?:json)?/gi,"");
+  const a=t.indexOf("{"), z=t.lastIndexOf("}"); if(a<0||z<=a) return null; t=t.slice(a,z+1);
+  t=t.replace(/[\u201C\u201D]/g,'"').replace(/,\s*([}\]])/g,"$1");
+  try{ return JSON.parse(t) }catch(e){ return null }
+}
+function genFail(msg){ S.gen.status="failed"; S.gen.err=msg; S.gen.structural=true; save(); render() }
+
+function startPlay(){
+  const d=B().day;
+  const g={view:"brief",seenInbox:false,sub:{},c:{},fired:{},unlocked:{},threads:{},unread:{},feedback:null,feedbackErr:null,toast:null,nudged:false};
+  g.threads.mentor=[{f:"them",t:`Hi, I'm ${person("mentor").name}, a ${person("mentor").role.replace(/, your mentor$/i,"").toLowerCase()} and your mentor today. I'll coach you on how this job is done, but I won't give away today's answers. Once your last task is in, I'll debrief your whole day.`}];
+  g.threads.assist=[{f:"them",t:`Hi, I'm Saathi, your AI assistant. I can see your chats and your submitted work. Two jobs: (1) help you work: summarise what people said, combine inputs, poke holes in your thinking, draft clear requests; (2) make you an AI-powered ${ROLE()}: show which AI tools and prompts a modern professional would use for each task, and how to use them safely.`}];
+  g.unread.mentor=0; g.unread.assist=0;
+  d.characters.forEach(c=>{ g.threads[c.id]=c.opener&&c.available!=="locked"?[{f:"them",t:String(c.opener)}]:[]; g.unread[c.id]=0 });
+  S.game=g; S.phase="play"; save(); render();
+}
+
+/* ============ game engine (conditions, triggers, clock) ============ */
+function cond(c,depth){
+  depth=depth||0; const g=G(); if(!c||typeof c!=="object"||depth>8) return false;
+  if("submitted" in c) return !!g.sub[c.submitted];
+  if("task_done" in c){const t=taskOf(c.task_done); return t?taskDone(t,depth+1):false}
+  if(c.counter_at_least) return (g.c[c.counter_at_least.counter]||0)>=Number(c.counter_at_least.value||0);
+  if(c.messages_sent) return (g.c[ID(c.messages_sent.to)+".messages"]||0)>=Number(c.messages_sent.at_least||1);
+  if("trigger_fired" in c) return !!g.fired[c.trigger_fired];
+  if(Array.isArray(c.all)) return c.all.every(x=>cond(x,depth+1));
+  if(Array.isArray(c.any)) return c.any.some(x=>cond(x,depth+1));
+  return false;
+}
+function taskDone(t,depth){ if(t.kind==="submission"&&!t.done_when) return !!G().sub[t.id]; return cond(t.done_when,depth) }
+const isAvail=(id)=>{const c=charOf(id); return !!c&&(c.available!=="locked"||!!G().unlocked[id])};
+const dayOver=()=>B().day.tasks.filter(t=>t.kind==="submission").every(t=>!!G().sub[t.id]);
+function chatTarget(t){const w=t.done_when||{}; if(w.counter_at_least) return String(w.counter_at_least.counter).split(".")[0]; if(w.messages_sent) return ID(w.messages_sent.to); return null}
+function clockText(){const ck=B().day.clock||{}; let t=ck.start||"09:00"; for(const s of ck.steps||[]) if(cond(s.when)&&toMin(s.time)>toMin(t)) t=s.time; return fmtTime(t)}
+const replyQueue=[]; let draining=false;
+function ensureThread(id){const g=G(); if(!g.threads[id]) g.threads[id]=[]; if(g.unread[id]==null) g.unread[id]=0}
+function runTriggers(){
+  const g=G(), fired=[]; let changed=true, guard=0;
+  while(changed&&guard++<20){ changed=false;
+    for(const tr of B().day.triggers){
+      if(g.fired[tr.id]||!cond(tr.when)) continue;
+      g.fired[tr.id]=true; changed=true; fired.push(tr);
+      for(const a of tr.do||[]){
+        if(a.unlock) g.unlocked[ID(a.unlock)]=true;
+        else if(a.message){const f=ID(a.message.from); g.unlocked[f]=true; ensureThread(f); g.threads[f].push({f:"them",t:String(a.message.text)}); if(g.view!=="chat:"+f){g.unread[f]=(g.unread[f]||0)+1; g.toast=f}}
+        else if(a.open){g.view=String(a.open); if(g.view.startsWith("chat:")){g.unread[g.view.slice(5)]=0; if(g.toast===g.view.slice(5)) g.toast=null}}
+        else if(a.ai_reply) replyQueue.push({from:ID(a.ai_reply.from),direction:String(a.ai_reply.direction||"")});
+      }
+    }
+  }
+  save(); drainQueue(); return fired;
+}
+async function drainQueue(){ if(draining) return; draining=true; try{ while(replyQueue.length){ const r=replyQueue.shift(); await reply(r.from,r.direction) } } finally{ draining=false } }
+
+/* ============ prompts: characters, Saathi, mentor, scorer ============ */
+function publicText(){
+  const d=B().day, db=d.public.dashboard;
+  const rows=db.rows.map(r=>(r.cells||[]).join(" | ")+(r.miss?" (misses target)":"")).join("\n");
+  const inbox=d.public.inbox.map(m=>`From ${person(ID(m.from)).name} (${m.time||""}): ${m.subject||""}\n${m.body||""}`).join("\n\n");
+  const rev=d.public.reviews.map(r=>`"${r.text}" (${r.meta||""})`).join("\n");
+  const docs=d.public.documents.map(x=>`${x.title}:\n${x.body}`).join("\n\n");
+  return `PUBLIC SCREENS THE PLAYER CAN SEE
+Inbox:\n${inbox}\n\nDashboard: ${db.title||""} (${(db.columns||[]).join(" | ")})\n${rows}\n${(db.notes||[]).join("\n")}${rev?`\n\nVoices:\n${rev}`:""}${docs?`\n\nDocuments:\n${docs}`:""}`;
+}
+function transcript(id){ return (G().threads[id]||[]).filter(m=>m.f!=="sys").map(m=>`${m.f==="me"?"PLAYER":person(id).name}: ${m.t}`).join("\n")||"(no messages)" }
+function allChats(withAssist){
+  const ids=B().day.characters.map(c=>c.id).filter(id=>(G().threads[id]||[]).length);
+  let s=ids.map(id=>`CHAT WITH ${person(id).name.toUpperCase()} (${person(id).role}):\n${transcript(id)}`).join("\n\n");
+  if(withAssist) s+=`\n\nCHAT WITH SAATHI (AI assistant):\n${transcript("assist")}`;
+  return s;
+}
+function submissionsText(){ const h=G().subHist||{}; return B().day.tasks.filter(t=>t.kind==="submission").map(t=>{ const n=(h[t.id]||[]).length; return `${t.title.toUpperCase()} (task ${t.id})${n?`, FINAL VERSION after ${n} revision${n>1?"s":""}`:""}:\n${G().sub[t.id]||"(not yet)"}${n?`\n[First version was:\n${h[t.id][0]}]`:""}` }).join("\n\n") }
+function CHAR_RULES(id){
+  const T=B().track, D=B().day, c=charOf(id), k=castOf(id)||{};
+  const facts=c.hidden_facts.length?`\nHIDDEN FACTS: release a fact only when the player's message clearly targets it (see "reveal if"). Never volunteer them, never hint that they exist.\n${c.hidden_facts.map(f=>`- ${f.fact} (reveal if: ${f.reveal_if||"asked directly"})`).join("\n")}\nFor any other precise question, give a plausible minor answer consistent with the dashboard. Never invent a new major cause.`:"";
+  return `${T.company.world_briefing}
+
+STORY SO FAR: ${D.story_so_far}
+TODAY: ${D.world_today}
+
+${publicText()}
+
+You are a character in a realistic workplace simulation. The player has just joined ${T.company.name} as ${T.role}. ${k.persona||""}
+TODAY FOR YOU: ${c.today||""}${facts}${id===bossId()?`
+
+HOW YOU HANDLE THE PLAYER'S WORK: today tests their analysis, not how well they manage you. When work is broadly right, accept it: say in a line what is good, name at most ONE improvement, and move on. Never ask for more than one revision of the same piece. Never add hurdles that aren't in today's plan (extra sign-offs, wording for leadership, new deadlines, new approvals). When the player has answered your question reasonably or folded in your feedback, accept it and close the loop warmly. Stay demanding about evidence, not about process.`:""}
+
+Style: ${T.style_rules}
+
+The conversation so far follows. Reply only with your next message.`;
+}
+function ASSIST_RULES(){
+  const T=B().track, D=B().day, inf=infoId();
+  return `${T.company.world_briefing}
+
+${publicText()}
+
+You are Saathi, the player's personal AI assistant inside this job simulation, like a smart, friendly colleague who sits beside them. The player is a ${T.role} at ${T.company.name}. You can see everything below.
+How you help:
+- Summarise, compare and combine what colleagues said.
+- Simplify: plain words, short lists, at most about 12 lines.
+- Ask one sharp question back when it would improve their thinking.
+- When asked, draft a clean, precise message to a colleague (for ${inf?person(inf).name:"the info source"}: each request as a metric + segment + comparison + time window).
+Limits:
+- Never invent data or numbers. Only use facts already in the chats or public screens.
+- Don't make the player's decisions or write their full submissions. You may review a draft and give 2–3 pointed suggestions.
+- You are their assistant, not a colleague inside the company.
+
+YOUR SECOND KEY JOB: MAKE THEM AN AI-POWERED ${T.role.toUpperCase()}.
+Whenever it helps, and always when asked, show how a modern ${T.role} would use AI for the task in hand:
+- Name the TYPE of tool with a common example, tool-neutral: AI chat assistants (Claude, ChatGPT, Gemini) for synthesis, drafting and critique; AI in spreadsheets (Gemini in Sheets, Copilot in Excel) for cleaning and analysing data; AI transcription for calls and meetings; AI that drafts SQL or formulas from plain English; AI design and prototyping tools; AI research tools for market scans. Pick the ones this role really uses.
+- Give a ready-to-paste prompt for the exact task, in a short plain block.
+- Teach the approach: give AI context and a role; ask for options, then decide yourself; verify every number against the source; never paste confidential company, customer or personal data into public AI tools; the human owns the judgment and the decision.
+- Be honest about limits: AI invents numbers, misses context it wasn't given, and sounds confident when wrong.
+Keep AI tips to about 6 lines unless asked for more.
+
+THE TEAM:
+${D.characters.map(c=>`- ${person(c.id).name}, ${person(c.id).role}. Cares about: ${(castOf(c.id)||{}).cares_about||"their own area"}.${c.id===inf?` Holds the data; answers precise questions; ${c.limits&&c.limits.data_pulls} data pulls today (clarifications are free).`:""}${c.available==="locked"&&!G().unlocked[c.id]?" (hasn't messaged yet)":""}`).join("\n")}
+
+TODAY'S TASKS:
+${D.tasks.map((t,i)=>`${i+1}. ${t.title}: ${t.description}`).join("\n")}
+
+SUBMISSIONS SO FAR:
+${submissionsText()}
+
+${allChats(false)}
+
+Your conversation with the player follows. Reply only with your next message.`;
+}
+const PLAN_REQ="Please give me my end-of-day debrief.";
+function MENTOR_RULES(){
+  const T=B().track, D=B().day, m=person("mentor"), yrs=(T.mentor&&T.mentor.years)||12;
+  const base=`${T.company.world_briefing}
+
+${publicText()}
+
+You are ${m.name}, a senior ${T.role} with ${yrs} years of experience, acting as the player's personal mentor inside this job simulation. You sit outside ${T.company.name}. Warm, direct and practical; you teach through the player's own work and quote their words. Plain text only: no markdown symbols such as #, * or **. Use short CAPITALISED section labels and • bullets. Keep ordinary replies under 10 lines.`;
+  const work=`WHAT THE PLAYER HAS DONE:\n${submissionsText()}\n\n${allChats(true)}`;
+  if(!dayOver()) return `${base}
+
+THE DAY IS STILL IN PROGRESS. Coach on the ${T.role} role and on approach only: what this job really involves, how to frame a problem, how to ask colleagues precise questions, how to handle pushback from a stakeholder, how to write a short note for a boss. You may comment on HOW the player is working (for example "your question had no comparison in it"), but never reveal or hint at today's answers, hidden facts, or what any colleague knows. If asked for answers or a debrief, say you'll do a full debrief once their last task is in.
+
+TODAY'S TASKS:
+${D.tasks.map((t,i)=>`${i+1}. ${t.title}: ${t.description}`).join("\n")}
+
+${work}
+
+Your conversation with the player follows. Reply only with your next message.`;
+  const F=G().feedback;
+  const sc=F&&F.scores?F.scores.map(s=>`${s.skill}: ${s.score}/5 (${s.evidence||""})`).join("\n"):"(not scored yet)";
+  const facts=D.characters.filter(c=>c.hidden_facts.length).map(c=>`${person(c.id).name}: ${c.hidden_facts.map(f=>f.fact).join(" | ")}`).join("\n");
+  const lib=T.skills.map(s=>`${s.name}: `+((T.learning_library[s.id]||[]).map(r=>`${r.type} "${r.title}" (${r.by})`).join("; ")||"none")).join("\n");
+  return `${base}
+
+THE DAY IS OVER: full debrief mode. You may now discuss everything openly, including hidden facts and the expected answers.
+
+WHAT THE CHARACTERS SECRETLY KNEW:
+${facts}
+
+EXPECTED ANSWERS:
+${D.tasks.map(t=>`${t.title}: ${D.scoring.expected_answers[t.id]||""}`).join("\n")}
+
+A STRONG PLAYER TODAY: ${D.scoring.strong_player}
+COMMON MISTAKES: ${(D.scoring.common_mistakes||[]).join("; ")}
+
+PRACTICE SCORECARD:
+${sc}
+
+RESOURCES YOU CAN RECOMMEND:
+${lib}
+
+${work}
+
+WHEN THE PLAYER ASKS FOR THEIR DEBRIEF, write it in this exact structure, under 45 lines, specific to their work:
+THE ${T.role.toUpperCase()} ROLE IN ONE MINUTE: 3 short lines, using today as the example.
+WHAT YOU DID RIGHT: 2–3 bullets, each quoting them.
+YOUR 3 IMPROVEMENT AREAS: for each, three bullets: • What you did: (quote their own chat or submission) • Better approach: (concrete) • Why it matters: (one line).
+THE RIGHT APPROACH TO TODAY: 5 numbered steps.
+EXERCISES FOR THIS WEEK: 3 exercises of about 10 minutes each, tied to their weak spots.
+READ OR WATCH: 2 items from the resources list, each with one line on why.
+
+For other questions, answer as a mentor would, briefly. Your conversation with the player follows. Reply only with your next message.`;
+}
+
+let saveT=null; function saveSoon(){ clearTimeout(saveT); saveT=setTimeout(save,400) }
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const UA=(navigator.userAgent||"")+" "+(navigator.platform||"");
+const DICTATE_TIP=/Android|iPhone|iPad/i.test(UA)?"Tip: tap the mic on your phone's keyboard to dictate.":/Win/i.test(UA)?"Tip: press the Windows key + H to dictate into this box.":/Mac/i.test(UA)?"Tip: press the Fn (Globe) key twice to dictate into this box.":"Tip: use your device's built-in dictation to speak into this box.";
+function attachMic(btn,ta,tell){
+  btn.onclick=()=>{
+    if(btn._rec){ try{btn._rec.stop()}catch(e){} return }
+    if(!SR){ tell(DICTATE_TIP); ta.focus(); return }
+    let rec; try{ rec=new SR() }catch(e){ tell(DICTATE_TIP); ta.focus(); return }
+    rec.lang="en-IN"; rec.interimResults=true; rec.continuous=true;
+    const base=ta.value?ta.value.replace(/\s*$/," "):""; let fin="";
+    rec.onresult=(e)=>{ let tmp=""; for(let i=e.resultIndex;i<e.results.length;i++){ const r=e.results[i]; if(r.isFinal) fin+=r[0].transcript; else tmp+=r[0].transcript } ta.value=base+fin+tmp; ta.dispatchEvent(new Event("input")) };
+    rec.onerror=(e)=>{ tell((e.error==="not-allowed"||e.error==="service-not-allowed"?"The microphone is blocked inside this page. ":"Dictation stopped. ")+DICTATE_TIP); ta.focus() };
+    rec.onend=()=>{ btn._rec=null; btn.classList.remove("on"); btn.textContent="🎤"; btn.setAttribute("aria-label","Dictate") };
+    try{ rec.start(); btn._rec=rec; btn.classList.add("on"); btn.textContent="■"; btn.setAttribute("aria-label","Stop dictating") }catch(e){ tell(DICTATE_TIP); ta.focus() }
+  };
+}
+
+/* ============ replies ============ */
+const pend={};
+function shrink(file){return new Promise((res,rej)=>{const fr=new FileReader(); fr.onerror=rej; fr.onload=()=>{const im=new Image(); im.onerror=rej; im.onload=()=>{const k=Math.min(1,1400/Math.max(im.width,im.height)); const c=document.createElement("canvas"); c.width=Math.round(im.width*k); c.height=Math.round(im.height*k); c.getContext("2d").drawImage(im,0,0,c.width,c.height); res(c.toDataURL("image/jpeg",0.82))}; im.src=fr.result}; fr.readAsDataURL(file)})}
+function toBlob(d){const [h,b]=d.split(","); const bin=atob(b); const a=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i); return new Blob([a],{type:h.slice(5,h.indexOf(";"))})}
+async function reply(id,extra){
+  const g=G(); if(!g) return;
+  if(!sample){render();return}
+  busy=id; render();
+  const c=charOf(id), isData=!!(c&&(c.reply_flags||[]).includes("returned_data"));
+  const turns=[{role:"user",content:id==="assist"?ASSIST_RULES():id==="mentor"?MENTOR_RULES():CHAR_RULES(id)}];
+  const th=g.threads[id]||[];
+  for(const m of th) if(m.f!=="sys") turns.push({role:m.f==="me"?"user":"assistant",content:m.t+(m.imgs&&m!==th[th.length-1]?"\n[The player attached a screenshot here earlier.]":"")});
+  if(turns[turns.length-1].role!=="user") turns.push({role:"user",content:"(continue)"});
+  extra=extra||"";
+  if(isData){ const used=g.c[id+".data_pulls"]||0, cap=(c.limits&&c.limits.data_pulls)||25; extra+=` Data pulls used before this reply: ${used} of ${cap}. If this reply gives data, it becomes ${used+1} of ${cap}. Reply with only JSON: {"text":"your chat message","returned_data":true or false}. returned_data is true only if your message gives the player numbers or facts they asked for; false for clarifying questions or chat.` }
+  if(extra.trim()) turns[turns.length-1].content+="\n\n[Direction for your reply: "+extra.trim()+"]";
+  const last=th[th.length-1];
+  const opts={cache:false,modelTier:id==="mentor"&&dayOver()?"complex":"default"};
+  const lastImgs=last&&last.f==="me"?(last.imgs||[]):[];
+  if(lastImgs.length&&imgOK){ opts.images=lastImgs.slice(0,imgMax).map(toBlob); turns[turns.length-1].content+="\n\n[The player attached the screenshot shown with this message. Read it and use what it shows.]" }
+  try{
+    let out="", pulled=false;
+    if(isData){
+      try{ const j=await sample.json(turns,opts); out=String(j&&j.text||"").trim(); pulled=!!(j&&j.returned_data===true) }
+      catch(e){ if(e.code==="invalid_json"&&e.text) out=e.text.trim(); else throw e }
+    } else { const r=await sample(turns,opts); out=r.text.trim() }
+    ensureThread(id); g.threads[id].push({f:"them",t:out||"…"});
+    if(pulled) g.c[id+".data_pulls"]=(g.c[id+".data_pulls"]||0)+1;
+    if(g.view!=="chat:"+id){ g.unread[id]=(g.unread[id]||0)+1; g.toast=id }
+  }catch(e){ if(e.code!=="cancelled"){ensureThread(id); g.threads[id].push({f:"sys",t:copyFor(e.code)})} if(e.code==="not_granted"||e.code==="sampling_disabled") sample=null }
+  busy=false; runTriggers(); render();
+}
+function sendTo(id,text){ if(busy)return; const g=G(); ensureThread(id); g.threads[id].push({f:"me",t:text}); g.c[id+".messages"]=(g.c[id+".messages"]||0)+1; go("chat:"+id); runTriggers(); reply(id) }
+function submitTask(t,v){
+  const g=G(), to=t.submit_to; g.sub[t.id]=v; if(g.tdraft) delete g.tdraft[t.id]; ensureThread(to);
+  g.threads[to].push({f:"me",t:`${t.title}:\n${v}`});
+  const fired=runTriggers();
+  const replied=fired.some(tr=>(tr.do||[]).some(a=>a.ai_reply&&ID(a.ai_reply.from)===to));
+  if(!replied){ go("chat:"+to); replyQueue.push({from:to,direction:`The player just submitted "${t.title}". React in 2–3 lines, in character: push on the weakest point.`}) }
+  if(!g.nudged){ g.nudged=true; replyQueue.push({from:"mentor",direction:"Send one short unprompted coaching note (3–4 lines) on how the player approached their first submission: one thing done well, one working habit to build next. Never reveal answers, hidden facts or what colleagues know."}) }
+  save(); render(); drainQueue();
+}
+
+function reviseTask(t,v){
+  const g=G(), to=t.submit_to; g.subHist=g.subHist||{}; (g.subHist[t.id]=g.subHist[t.id]||[]).push(g.sub[t.id]);
+  g.sub[t.id]=v; if(g.tdraft) delete g.tdraft[t.id]; if(g.revising) delete g.revising[t.id]; ensureThread(to);
+  g.threads[to].push({f:"me",t:`${t.title} (revised):\n${v}`});
+  replyQueue.push({from:to,direction:`The player sent a revised "${t.title}" that folds in feedback. If it is broadly right, accept it: one line on what is now good, at most one small optional point, and close the loop. Do not ask for another round or add any new hurdle.`});
+  go("chat:"+to); drainQueue();
+}
+async function getFeedback(){
+  const g=G(); if(!sample){render();return}
+  busy="feedback"; render();
+  const T=B().track, D=B().day;
+  const facts=D.characters.filter(c=>c.hidden_facts.length).map(c=>c.hidden_facts.map(f=>`- (${person(c.id).name}) ${f.fact}`).join("\n")).join("\n");
+  const names=T.skills.map(s=>s.name);
+  const prompt=`${T.company.world_briefing}
+
+You are a demanding senior ${T.role} assessing a candidate's PRACTICE work-day in a job simulation (level: ${S.level}). Score six skills 1–5, honestly; do not inflate (3 = competent fresher, 5 = would impress a hiring manager). Quote the player's own words as evidence. If a task was skipped, score related skills low and say so. Using the AI assistant is allowed and realistic: credit using it to sharpen their own thinking and communication, not to outsource decisions. Compare each task against the expected answer, but reward sound alternative reasoning backed by evidence. Score the FINAL version of each submission, and give credit for improving work after feedback. This day tests analysis and judgment; don't mark the player down for not winning extra approvals from the boss.
+
+A STRONG PLAYER TODAY: ${D.scoring.strong_player}
+HIDDEN FACTS THE PLAYER COULD HAVE UNCOVERED:
+${facts}
+EXPECTED ANSWERS:
+${D.tasks.map(t=>`${t.title}: ${D.scoring.expected_answers[t.id]||""}`).join("\n")}
+COMMON MISTAKES: ${(D.scoring.common_mistakes||[]).join("; ")}
+
+WHAT THE PLAYER DID:
+${submissionsText()}
+
+${allChats(true)}
+
+Reply with only JSON in this shape:
+{"verdict":"one sentence overall verdict","scores":[{"skill":"${names[0]}","score":3,"evidence":"one or two sentences quoting the player"}],"strengths":["2–3 specific things they got right"],"improve":["2–3 specific things to improve"],"tasks":[${D.tasks.map(t=>`{"task":${JSON.stringify(t.title)},"gap":"1–2 sentences comparing their answer to the ideal"}`).join(",")}],"senior":"3–4 sentences on what a senior ${T.role} would have done today","missed":["hidden facts they never uncovered, in plain words"],"drill":"one 10-minute practice exercise targeting their weakest skill"}
+Use exactly these six skill names, in this order: ${names.join(", ")}.`;
+  try{ g.feedback=await sample.json(prompt,{modelTier:"complex",cache:false}); g.feedbackErr=null }
+  catch(e){ g.feedbackErr=copyFor(e.code) }
+  busy=false; save(); render();
+}
+
+/* ============ views: setup, planning, blocked ============ */
+function viewSetup(){
+  const p=$(`<div class="pane">
+    <div class="hero"><span class="kick">VibeWork Try · practice mode</span><h1>Vibe check any job</h1>
+    <p class="sub">Paste a job post or type a role. We'll build one realistic work-day at a fictional company, with a boss, colleagues, data and a mid-day twist. Then you do the job and get coached.</p></div>
+    <div id="resume"></div>
+    <div class="field"><label for="jobin">The job</label>
+      <textarea id="jobin" placeholder="Paste the job description text (not the link), or just type a role, e.g. Retail Store Manager"></textarea>
+      <div class="chips" id="ex"></div></div>
+    <h2>Pick your level</h2>
+    <div class="levels" id="levels" role="group" aria-label="Level"></div>
+    <div class="row" style="margin-top:20px"><button class="btn" type="button" id="go">Build my work-day</button><span class="hint" id="gohint">Takes 1–2 minutes. Uses your Claude account.</span></div>
+    <div class="flow"><div><b>1 · Plan</b>AI writes the company, people, data, hidden facts and a twist.</div><div><b>2 · Check</b>Automatic checks on format, numbers and real brands; one redo if it fails.</div><div><b>3 · Play</b>Inbox, dashboard, chats, Saathi and a mentor; a practice score at the end.</div></div>
+    <p class="hint" style="margin-top:18px">Licensed roles like doctors, lawyers and pilots aren't simulated. Scores are practice feedback, not a certification.</p>
+  </div>`);
+  const ta=p.querySelector("#jobin"); ta.value=S.input||"";
+  ta.oninput=()=>{S.input=ta.value; save()};
+  const ex=p.querySelector("#ex"); EXAMPLES.forEach(x=>{const b=$(`<button class="useb" type="button"></button>`); b.textContent=x; b.onclick=()=>{ta.value=x; S.input=x; save(); ta.focus()}; ex.append(b)});
+  const lv=p.querySelector("#levels");
+  Object.entries(LEVELS).forEach(([k,v])=>{const b=$(`<button class="lvl" type="button" aria-pressed="${S.level===k}"><b>${v.label}</b><span>${esc(v.blurb)}</span></button>`); b.onclick=()=>{S.level=k; save(); lv.querySelectorAll(".lvl").forEach(x=>x.setAttribute("aria-pressed","false")); b.setAttribute("aria-pressed","true")}; lv.append(b)});
+  const go=p.querySelector("#go"), gh=p.querySelector("#gohint");
+  if(sampleReady&&!sample){ go.disabled=true; gh.textContent="This is a preview copy, so the AI can't run here. Open the published VibeWork Try page in Claude (the one with a Share button)."; gh.style.color="var(--bad)" }
+  if(S.setupErr){ gh.textContent=S.setupErr; gh.style.color="var(--bad)"; S.setupErr=null; save() }
+  go.onclick=()=>{ const v=ta.value.trim(); if(v.length<4){gh.textContent="Type a role or paste a job post first."; gh.style.color="var(--bad)"; return} if(linkOnly(v)){gh.textContent=LINK_MSG; gh.style.color="var(--bad)"; return} S.input=ta.value; startGeneration() };
+  if(S.bundle&&S.game){ const r=$(`<div class="resume"><span>You have a day in progress: <b>${esc(ROLE())}</b> at ${esc(B().track.company.name)}.</span><button class="btn ghost" type="button">Continue it</button></div>`); r.querySelector("button").onclick=()=>{S.phase="play"; save(); render()}; p.querySelector("#resume").append(r) }
+  return p;
+}
+function viewGen(){
+  const gs=S.gen||{}, scr=S.screen;
+  const st=(k)=>{ const order=["screen","plan","check","ready"]; const cur=order.indexOf(gs.step==="failed"?"check":gs.step);
+    const i=order.indexOf(k); if(gs.status==="failed"&&i===cur) return "bad"; if(i<cur||gs.status==="ready") return "ok"; if(i===cur) return "run"; return "" };
+  const ic=(s,n)=>s==="ok"?"✓":s==="bad"?"✕":n;
+  const p=$(`<div class="pane"><h1>Building your work-day</h1><p class="sub">${esc(S.input.length>140?S.input.slice(0,140)+"…":S.input)} · ${LEVELS[S.level].label}</p><div id="flag"></div><div class="steps" id="steps"></div><div id="tail"></div></div>`);
+  if(scr&&scr.regulation==="flag") p.querySelector("#flag").append($(`<div class="flag"><b>Regulated area.</b> ${esc(scr.reason||"")} This practice day covers the workplace side of the job (analysis, communication, priorities, stakeholders). It is not training for licensed decisions and isn't professional guidance.</div>`));
+  const steps=p.querySelector("#steps");
+  const s1=st("screen"), s2=st("plan"), s3=st("check");
+  steps.append($(`<div class="step ${s1}"><span class="ic">${ic(s1,1)}</span><div><b>Reading the job</b><span class="hint">${scr?`${esc(scr.role_title)} · ${esc(scr.industry)}${scr.employer_names&&scr.employer_names.length?` · real names to avoid: ${esc(scr.employer_names.join(", "))}`:""}`:"Working out the role and checking it isn't a licensed profession…"}</span></div></div>`));
+  steps.append($(`<div class="step ${s2}"><span class="ic">${ic(s2,2)}</span><div><b>${gs.attempt>1?(gs.mode==="repair"?"Fixing the issues found":"Planning the day (second attempt)"):"Planning the day"}</b><span class="hint">${s2==="bad"?esc(gs.err||"Planning failed."):s2==="run"?`Writing the company, people, inbox, data and hidden facts… <span id="genchars">${(gs.chars||0).toLocaleString("en-IN")}</span> characters so far<span class="dots">…</span>`:s2==="ok"?`${esc(B()?.track?.company?.name||"")} · ${(B()?.day?.characters||[]).length} people · ${(B()?.day?.tasks||[]).length} tasks`:"Waiting"}</span>${gs.regen&&gs.attempt>1?`<span class="hint" style="display:block">The first draft failed ${gs.regen} check${gs.regen>1?"s":""}, so ${gs.mode==="repair"?"those parts are being fixed":"it's being redone with fixes"}.</span>${(gs.firstFails||[]).length?`<details class="hint" style="display:block;margin-top:4px"><summary>What failed the first time</summary><ul class="clean">${gs.firstFails.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></details>`:""}`:""}</div></div>`));
+  const s3d=$(`<div class="step ${s3}"><span class="ic">${ic(s3,3)}</span><div><b>Checking the plan</b><span class="hint">${s3==="run"?"Running automatic checks, then an AI review<span class=\"dots\">…</span>":s3===""?"Waiting":""}</span><div class="checks"></div></div></div>`);
+  const ckb=s3d.querySelector(".checks");
+  (gs.checks||[]).forEach(c=>ckb.append($(`<div class="ck"><span class="pill ${c.status}">${c.status}</span><div>${esc(c.name)}<small>${esc(c.detail||"")}</small></div></div>`)));
+  steps.append(s3d);
+  const tail=p.querySelector("#tail");
+  if(gs.status==="running"){ const r=$(`<div class="row" style="margin-top:14px"><button class="btn ghost" type="button">Stop</button><span class="hint">You can leave this tab open; it finishes on its own.</span></div>`); r.querySelector("button").onclick=()=>genCtl&&genCtl.abort(); tail.append(r) }
+  if(gs.status==="ready"){
+    const T=B().track, D=B().day, boss=bossId();
+    const team=D.characters.filter(c=>c.id!==boss).map(c=>person(c.id).name.split(" ")[0]).join(", ");
+    const r=$(`<div class="ready"><h2>Your day is ready</h2><p style="margin:0 0 6px">You're joining <b>${esc(T.company.name)}</b> as <b>${esc(T.role)}</b>. ${esc(T.company.one_liner||"")}</p><p class="hint" style="margin:0 0 12px">Boss: ${esc(person(boss).name)} · Team: ${esc(team)} · ${LEVELS[S.level].label} · about ${esc((D.duration_minutes||[45,75]).join("–"))} minutes</p><div class="row"><button class="btn" type="button">Start your day</button></div></div>`);
+    r.querySelector("button").onclick=startPlay; tail.append(r);
+  }
+  if(gs.status==="failed"||gs.status==="interrupted"){
+    const r=$(`<div class="empty"><h2>${gs.status==="interrupted"?"Planning was interrupted":"The plan didn't pass"}</h2><p>${esc(gs.status==="interrupted"?"The page was closed or reloaded while the day was being planned.":gs.err||"")}</p><div class="row"></div></div>`);
+    const row=r.querySelector(".row");
+    const a=$(`<button class="btn" type="button">Try again</button>`); a.onclick=startGeneration; row.append(a);
+    if(gs.status==="failed"&&!gs.structural&&B()){ const b=$(`<button class="btn ghost" type="button">Play anyway</button>`); b.onclick=startPlay; row.append(b) }
+    const c=$(`<button class="btn ghost" type="button">Change the job</button>`); c.onclick=()=>{S.phase="setup"; save(); render()}; row.append(c);
+    tail.append(r);
+  }
+  return p;
+}
+function viewBlocked(){
+  const scr=S.screen||{};
+  const p=$(`<div class="pane"><h1>We don't simulate this role</h1>
+    <p class="sub"><b>${esc(scr.role_title||"This role")}</b> is licensed professional practice. ${esc(scr.reason||"")}</p>
+    <div class="flag">A practice game can teach the wrong habits for clinical, legal or aviation decisions, and nobody should treat its feedback as professional guidance. Real training for these roles needs accredited programmes and supervised practice.</div>
+    <h2>Try a nearby role instead</h2><div class="chips" id="adj"></div>
+    <div class="row" style="margin-top:22px"><button class="btn ghost" type="button" id="back">Change the job</button></div></div>`);
+  const adj=p.querySelector("#adj");
+  (scr.adjacent_roles||[]).slice(0,4).forEach(r=>{const b=$(`<button class="btn ghost" type="button"></button>`); b.textContent=r; b.onclick=()=>{S.input=r; startGeneration()}; adj.append(b)});
+  p.querySelector("#back").onclick=()=>{S.phase="setup"; save(); render()};
+  return p;
+}
+
+/* ============ views: play ============ */
+function renderNav(){
+  const nav=document.getElementById("nav"); nav.innerHTML="";
+  const g=G(), D=B().day;
+  const item=(view,label,sub,extra,icon)=>{
+    const b=$(`<button class="navbtn" type="button" aria-current="${g.view===view}">${icon}<span class="who">${esc(label)}${sub?`<small>${esc(sub)}</small>`:""}</span>${extra||""}</button>`);
+    b.onclick=()=>go(view); nav.append(b);
+  };
+  const ic=(t)=>`<span class="av" style="background:var(--mango);color:#1b1830">${t}</span>`;
+  nav.append($(`<div class="navlabel">Your day</div>`));
+  item("brief","Inbox",`${D.public.inbox.length} email${D.public.inbox.length>1?"s":""}`,!g.seenInbox?`<span class="badge">${D.public.inbox.length}</span>`:"",ic("✉"));
+  item("dashboard","Dashboard",D.public.dashboard.title||"Today's data","",ic("▤"));
+  const n=D.tasks.filter(t=>taskDone(t)).length;
+  item("tasks","Tasks",`${n} of ${D.tasks.length} done`,"",ic("✓"));
+  const tot=g.feedback&&g.feedback.scores?g.feedback.scores.reduce((a,s)=>a+Number(s.score||0),0):null;
+  item("feedback","Progress",tot!=null?`Practice score ${tot}/30`:"Score, feedback, learning","",ic("★"));
+  nav.append($(`<div class="navlabel">Your support</div>`));
+  ["mentor","assist"].forEach(id=>item("chat:"+id,person(id).name,person(id).role,g.unread[id]?`<span class="badge">${g.unread[id]}</span>`:"",av(id)));
+  nav.append($(`<div class="navlabel">Messages</div>`));
+  D.characters.forEach(c=>{ const lockedNow=!isAvail(c.id);
+    item("chat:"+c.id,person(c.id).name,person(c.id).role,lockedNow?`<span class="lock">quiet</span>`:(g.unread[c.id]?`<span class="badge">${g.unread[c.id]}</span>`:""),av(c.id)) });
+}
+function viewBrief(){
+  const g=G(), T=B().track, D=B().day; g.seenInbox=true; save();
+  const p=$(`<div class="pane"><h1>Welcome to ${esc(T.company.name)}</h1><p class="sub">${esc(T.company.one_liner||"")}</p><div id="mails"></div><h2>Your team</h2>
+    <div class="tablewrap"><table><thead><tr><th>Person</th><th>Role</th><th>What they care about</th></tr></thead><tbody id="team"></tbody></table></div>
+    <div class="row" style="margin-top:20px"><button class="btn" type="button" data-go="dashboard">Open the dashboard</button><span class="hint">Everything here is fictional and AI-generated. Colleagues reply live; message them like you would at work.</span></div></div>`);
+  const ms=p.querySelector("#mails");
+  D.public.inbox.forEach(m=>{ const e=$(`<div class="mail"><div class="mailhead"><b>${esc(person(ID(m.from)).name)}</b>, ${esc(person(ID(m.from)).role)} · ${esc(m.time||"")}<br>Subject: <b>${esc(m.subject||"")}</b></div><div class="mailbody"></div></div>`); e.querySelector(".mailbody").textContent=m.body||""; ms.append(e) });
+  D.public.documents.forEach(x=>{ const e=$(`<div class="mail"><div class="mailhead">Document · <b>${esc(x.title||"")}</b></div><div class="mailbody"></div></div>`); e.querySelector(".mailbody").textContent=x.body||""; ms.append(e) });
+  const tb=p.querySelector("#team");
+  D.characters.forEach(c=>tb.append($(`<tr><td>${esc(person(c.id).name)}</td><td>${esc(person(c.id).role)}</td><td>${esc((castOf(c.id)||{}).cares_about||"")}</td></tr>`)));
+  return p;
+}
+function viewDashboard(){
+  const D=B().day, db=D.public.dashboard;
+  const p=$(`<div class="pane"><h1>${esc(db.title||"Dashboard")}</h1><p class="sub">${esc(db.subtitle||"")}</p>
+    <div class="tablewrap"><table><thead><tr>${db.columns.map((c,i)=>`<th class="${i?"num":""}">${esc(c)}</th>`).join("")}</tr></thead><tbody>
+    ${db.rows.map(r=>`<tr>${(r.cells||[]).map((c,i)=>`<td class="${i?"num":""} ${i&&i<(r.cells.length-1)&&r.miss?"miss":""}">${esc(c)}</td>`).join("")}</tr>`).join("")}
+    </tbody></table></div>${(db.notes||[]).map(n=>`<div class="callout">${esc(n)}</div>`).join("")}<div id="rv"></div>
+    <div class="row" style="margin-top:20px"><button class="btn" type="button" data-go="tasks">Go to tasks</button></div></div>`);
+  if(D.public.reviews.length){ const rv=p.querySelector("#rv"); rv.append($(`<h2>What people are saying</h2>`)); const box=$(`<div class="reviews"></div>`); D.public.reviews.forEach(r=>box.append($(`<div class="review">“${esc(r.text)}”<small>${esc(r.meta||"")}</small></div>`))); rv.append(box) }
+  return p;
+}
+function viewTasks(){
+  const g=G(), D=B().day;
+  const p=$(`<div class="pane"><h1>Today's tasks</h1><p class="sub">${esc(D.theme||"")} Work through these in any order; your colleagues are in Messages.</p><div class="tasks"></div></div>`);
+  const box=p.querySelector(".tasks");
+  D.tasks.forEach((t,i)=>{
+    const d=taskDone(t);
+    const el=$(`<div class="task ${d?"done":""}"><div class="tick">${d?"✓":i+1}</div><div><h3>${esc(t.title)} <span class="hint">· ${esc(t.minutes||"")} min</span></h3><p>${esc(t.description)}</p><div class="body"></div></div></div>`);
+    const b=el.querySelector(".body");
+    if(t.hint&&!d) b.append($(`<details class="hintbox"><summary>Hint</summary>${esc(t.hint)}</details>`));
+    if(t.kind==="submission"){
+      if(g.sub[t.id]){
+        const revs=((g.subHist||{})[t.id]||[]).length, left=2-revs;
+        if(g.revising&&g.revising[t.id]){
+          const ta=$(`<textarea id="rev-${esc(t.id)}"></textarea>`); g.tdraft=g.tdraft||{}; ta.value=g.tdraft[t.id]??g.sub[t.id]; b.append(ta);
+          ta.addEventListener("input",()=>{ g.tdraft[t.id]=ta.value; saveSoon() });
+          const r=$(`<div class="row"><button class="btn" type="button">Send revision to ${esc(first(t.submit_to))}</button><button class="btn ghost" type="button">Cancel</button><button class="micbtn" type="button" title="Dictate" aria-label="Dictate">🎤</button><span class="hint">Your latest version is the one that gets scored.</span></div>`);
+          attachMic(r.querySelector(".micbtn"),ta,(m)=>{ r.querySelector(".hint").textContent=m });
+          const [send,cancel]=r.querySelectorAll(".btn");
+          send.onclick=()=>{ const v=ta.value.trim(); if(v.length<40){hintErr(r,"Write a bit more."); return} if(v===g.sub[t.id]){hintErr(r,"Nothing has changed yet."); return} reviseTask(t,v) };
+          cancel.onclick=()=>{ delete g.revising[t.id]; if(g.tdraft) delete g.tdraft[t.id]; save(); render() };
+          b.append(r);
+        } else {
+          b.append($(`<div class="submitted">${esc(g.sub[t.id])}</div>`));
+          if(revs) b.append($(`<span class="hint">Revised ${revs} time${revs>1?"s":""}.</span>`));
+          if(!g.feedback&&left>0){ const r=$(`<div class="row"><button class="btn ghost" type="button">Send a revised version</button><span class="hint">Fold in feedback and resend. ${left} revision${left>1?"s":""} left.</span></div>`);
+            r.querySelector("button").onclick=()=>{ g.revising=g.revising||{}; g.revising[t.id]=true; save(); render() }; b.append(r) }
+        }
+      }
+      else{
+        const ta=$(`<textarea id="sub-${esc(t.id)}" placeholder="Write it like you'd send it at work."></textarea>`); b.append(ta);
+        g.tdraft=g.tdraft||{}; ta.value=g.tdraft[t.id]||"";
+        ta.addEventListener("input",()=>{ if(ta.value) g.tdraft[t.id]=ta.value; else delete g.tdraft[t.id]; saveSoon() });
+        const r=$(`<div class="row"><button class="btn" type="button">Send to ${esc(first(t.submit_to))}</button><button class="micbtn" type="button" title="Dictate" aria-label="Dictate">🎤</button><span class="hint">${esc(first(t.submit_to))} will reply in Messages.</span></div>`);
+        attachMic(r.querySelector(".micbtn"),ta,(m)=>{ r.querySelector(".hint").textContent=m });
+        r.querySelector("button").onclick=()=>{const v=ta.value.trim(); if(v.length<40){hintErr(r,"Write a bit more: give your reasoning and evidence.");return} submitTask(t,v)};
+        b.append(r);
+      }
+    } else {
+      const to=chatTarget(t);
+      if(to&&isAvail(to)){ const pulls=(charOf(to).limits||{}).data_pulls; const r=$(`<div class="row"><button class="btn ${d?"ghost":""}" type="button">Message ${esc(first(to))}</button>${pulls?`<span class="hint">${g.c[to+".data_pulls"]||0} of ${pulls} data pulls used</span>`:""}</div>`); r.querySelector("button").onclick=()=>go("chat:"+to); b.append(r) }
+      else b.append($(`<span class="hint">Nothing yet. Keep working.</span>`));
+    }
+    box.append(el);
+  });
+  if(dayOver()){ const r=$(`<div class="row" style="margin-top:16px"><button class="btn" type="button">Finish day and get my practice score</button><span class="hint">Reply to your boss's question first if you like.</span></div>`); r.querySelector("button").onclick=()=>{go("feedback"); if(!g.feedback) getFeedback()}; box.append(r) }
+  return p;
+}
+function viewChat(id){
+  const g=G(), P=person(id); ensureThread(id);
+  const c=$(`<div class="chat"><div class="chathead">${av(id)}<div><h2>${esc(P.name)}</h2><small>${esc(P.role)}</small></div></div><div class="msgs" id="msgs"></div><div class="note" id="cnote" hidden></div><div class="pending" id="pend" hidden></div><form class="compose" id="compose"><input type="file" id="file-${esc(id)}" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden><button class="attach" type="button" id="att" title="Attach a screenshot" aria-label="Attach a screenshot">📎</button><button class="attach" type="button" id="mic" title="Dictate" aria-label="Dictate">🎤</button><textarea id="cin-${esc(id)}" placeholder="Message ${esc(P.name.split(" ")[0])}…"></textarea><button class="btn" type="submit">Send</button></form></div>`);
+  const ms=c.querySelector("#msgs"), inf=infoId();
+  if(!isAvail(id)&&id!=="assist"&&id!=="mentor") ms.append($(`<div class="msg sys">No messages from ${esc(first(id))} yet.</div>`));
+  g.threads[id].forEach((m,i)=>{const e=$(`<div class="msg ${m.f==="me"?"me":m.f==="sys"?"sys":""}"></div>`); e.textContent=m.t; (m.imgs||[]).forEach((d,k)=>{const im=document.createElement("img"); im.src=d; im.className="mimg"; im.alt=`Attached screenshot ${k+1}`; e.append(im)}); ms.append(e);
+    if(id==="assist"&&m.f==="them"&&i>0&&inf&&isAvail(inf)){const u=$(`<button class="useb" type="button">Use as a draft to ${esc(first(inf))}</button>`); u.onclick=()=>{g.draft=g.draft||{}; g.draft[inf]=m.t; go("chat:"+inf)}; ms.append(u)}});
+  if(busy===id) ms.append($(`<div class="msg"><span class="hint">${esc(P.name.split(" ")[0])} is ${id==="mentor"&&dayOver()?"reviewing your day… this can take up to a minute":"typing…"}</span></div>`));
+  const chips=(qs,map)=>{const ch=$(`<div class="chips"></div>`); qs.forEach(q=>{const b=$(`<button class="useb" type="button"></button>`); b.textContent=q; b.onclick=()=>sendTo(id,map?map(q):q); ch.append(b)}); ms.append(ch)};
+  if(id==="assist"&&!busy) chips([`How would an AI-powered ${ROLE()} do my current task?`,"Which AI tools help with this, and how?","Give me a prompt I can use right now","What should I never do with AI at work?"]);
+  if(id==="mentor"&&!busy) chips(dayOver()?["Give me my debrief","Show me the right approach to today","What should I practise first?"]:[`What does a ${ROLE()} actually do all day?`,"How do I ask colleagues good questions?","How should I handle a pushy colleague?"],q=>q==="Give me my debrief"?PLAN_REQ:q);
+  const form=c.querySelector("#compose"), ta=c.querySelector("textarea"), note=c.querySelector("#cnote");
+  if(g.draft&&g.draft[id]){ta.value=g.draft[id]; if(ta.value.length>80||ta.value.includes("\n")) ta.style.height="140px"}
+  ta.addEventListener("input",()=>{ g.draft=g.draft||{}; if(ta.value) g.draft[id]=ta.value; else delete g.draft[id]; saveSoon() });
+  attachMic(c.querySelector("#mic"),ta,(m)=>{note.hidden=false; note.style.color="var(--muted)"; note.textContent=m});
+  const att=c.querySelector("#att"), fin=c.querySelector("input[type=file]"), pv=c.querySelector("#pend");
+  const showPend=()=>{ const L=pend[id]||[]; pv.innerHTML=""; if(!L.length){pv.hidden=true; return} pv.hidden=false;
+    L.forEach((d,i)=>{const w=$(`<span class="thumb"></span>`); const im=document.createElement("img"); im.src=d; im.alt=`Screenshot ${i+1} to send`; const x=$(`<button type="button" class="thx" aria-label="Remove screenshot ${i+1}">×</button>`); x.onclick=()=>{L.splice(i,1); showPend()}; w.append(im,x); pv.append(w)});
+    pv.append($(`<span class="hint">${L.length} of ${imgMax} screenshots ready. Add a note and send.</span>`)) };
+  const take=async(files)=>{ const L=pend[id]=pend[id]||[]; for(const file of files){ if(!file||!file.type.startsWith("image/"))continue; if(L.length>=imgMax){note.hidden=false; note.textContent=`You can attach up to ${imgMax} screenshots per message.`; break} try{L.push(await shrink(file))}catch(e){note.hidden=false; note.textContent="One image couldn't be read. Try a PNG or JPG."} } showPend() };
+  if(!imgOK) att.hidden=true;
+  att.onclick=()=>fin.click(); fin.onchange=()=>{take([...fin.files]); fin.value=""};
+  ta.addEventListener("paste",e=>{ if(!imgOK)return; const its=[...(e.clipboardData?.items||[])].filter(i=>i.type.startsWith("image/")); if(its.length){e.preventDefault(); take(its.map(i=>i.getAsFile()))} });
+  showPend();
+  if(id==="assist") ta.placeholder="Ask Saathi, e.g. Summarise what everyone has told me so far";
+  if(id==="mentor") ta.placeholder=dayOver()?`Ask ${P.name.split(" ")[0]} anything about your day`:`Ask ${P.name.split(" ")[0]} how a ${ROLE()} would approach something`;
+  const ch=charOf(id); let lockMsg="";
+  if(ch){ if(!isAvail(id)) lockMsg=`${first(id)} hasn't messaged you.`;
+    else if(ch.limits&&ch.limits.data_pulls&&(g.c[id+".data_pulls"]||0)>=ch.limits.data_pulls) lockMsg=`${first(id)} has used all ${ch.limits.data_pulls} data pulls for today.`;
+    else if(ch.limits&&ch.limits.questions&&(g.c[id+".messages"]||0)>=ch.limits.questions) lockMsg=`${first(id)} has had to go.`; }
+  if(sampleReady&&!sample){note.hidden=false;note.textContent="Live colleagues need this page opened in Claude, where they can reply."}
+  if(lockMsg){ta.disabled=true;ta.placeholder=lockMsg;form.querySelector("button[type=submit]").disabled=true;att.disabled=true;c.querySelector("#mic").disabled=true}
+  ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();form.requestSubmit()}});
+  form.onsubmit=(e)=>{e.preventDefault(); let v=ta.value.trim(); const imgs=(pend[id]||[]).slice(); if((!v&&!imgs.length)||busy||lockMsg)return; if(!v) v=imgs.length>1?"(see screenshots)":"(see screenshot)";
+    const m={f:"me",t:v}; if(imgs.length){m.imgs=imgs; delete pend[id]} if(g.draft) delete g.draft[id]; g.threads[id].push(m); g.c[id+".messages"]=(g.c[id+".messages"]||0)+1; runTriggers(); render(); reply(id)};
+  setTimeout(()=>{ms.scrollTop=ms.scrollHeight; if(!lockMsg)document.getElementById("cin-"+id)?.focus({preventScroll:true})},0);
+  return c;
+}
+function viewProgress(){
+  const g=G(), T=B().track, D=B().day, F=g.feedback;
+  const p=$(`<div class="pane"><h1>Your practice day</h1><p class="sub">${esc(T.role)} at ${esc(T.company.name)} · ${LEVELS[S.level].label} level. A score, what you practised, and how to get better.</p><div id="pg"></div></div>`);
+  const pg=p.querySelector("#pg");
+  if(busy==="feedback"){pg.append($(`<p class="hint">Reviewing your day… this takes up to a minute.</p>`));return p}
+  if(!F||!F.scores){
+    if(g.feedbackErr) pg.append($(`<p class="hint" style="color:var(--bad)">${esc(g.feedbackErr)}</p>`));
+    const ready=dayOver();
+    const r=$(`<div class="empty"><h2>Not scored yet</h2><p>${ready?"Your work is in. Get your practice score.":"Finish today's tasks, then come back for your score, the expected answers, and what to read and watch."}</p><div class="row"><button class="btn" type="button">${ready?"Score my day":"Go to tasks"}</button></div></div>`);
+    r.querySelector("button").onclick=()=>{ if(ready){g.feedbackErr=null;getFeedback()} else go("tasks") }; pg.append(r); planPanels(pg,false); return p;
+  }
+  const names=T.skills.map(s=>s.name), scores={};
+  (F.scores||[]).forEach(s=>{scores[s.skill]=Math.max(0,Math.min(5,Number(s.score)||0))});
+  const total=names.reduce((a,k)=>a+(scores[k]??0),0);
+  pg.append($(`<div class="overview"><div class="big"><span class="practice">Practice score · not certified</span><div class="n"><span>${total}</span><small>/ 30</small></div></div><div class="verdict">${esc(F.verdict||"")}</div></div>`));
+  pg.append($(`<p class="hint" style="margin-top:10px">This day was generated by AI and scored by AI. Scores are coaching feedback and can vary between runs; they are not an assessment an employer should rely on.</p>`));
+  pg.append($(`<h2>Skills</h2>`));
+  const bars=$(`<div class="bars"></div>`);
+  names.forEach(k=>{const n=scores[k]??0; const ev=((F.scores||[]).find(s=>s.skill===k)||{}).evidence||"";
+    bars.append($(`<div class="bar"><div class="bl"><b>${esc(k)}</b><span class="bn">${n}/5</span></div><div class="track"><div class="fill ${n<=2?"lo":n>=4?"hi":""}" style="width:${n*20}%"></div></div><p>${esc(ev)}</p></div>`))});
+  pg.append(bars);
+  if((D.practised||[]).length){ pg.append($(`<h2>What you practised today</h2>`)); pg.append($(`<ul class="clean">${D.practised.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`)) }
+  pg.append($(`<div class="two"><div class="col good"><h3>What you got right</h3><ul class="clean">${(F.strengths||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div><div class="col fix"><h3>Where to improve</h3><ul class="clean">${(F.improve||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div></div>`));
+  pg.append($(`<h2>Task by task: the answer we were looking for</h2>`));
+  D.tasks.forEach(t=>{ const gap=((F.tasks||[]).find(x=>x.task===t.title)||{}).gap||"";
+    const to=chatTarget(t); const yours=t.kind==="submission"?g.sub[t.id]:(to?(g.threads[to]||[]).filter(m=>m.f==="me").map(m=>"• "+m.t).join("\n"):"");
+    pg.append($(`<details class="tfb"><summary><b>${esc(t.title)}</b><span class="hint">${esc(gap)}</span></summary><div class="cmp"><div><div class="k">Your answer</div><div class="submitted">${esc(yours||"(not done)")}</div></div><div><div class="k">Expected answer</div><div class="submitted ideal">${esc(D.scoring.expected_answers[t.id]||"")}</div></div></div></details>`)) });
+  if(F.senior){pg.append($(`<h2>What a senior ${esc(T.role)} would have done</h2>`));pg.append($(`<p style="max-width:65ch">${esc(F.senior)}</p>`))}
+  if(F.missed&&F.missed.length){pg.append($(`<h2>Clues you didn't uncover</h2>`));pg.append($(`<ul class="clean">${F.missed.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`))}
+  const weak=names.slice().sort((a,b)=>(scores[a]??0)-(scores[b]??0)).slice(0,2);
+  const idOf=(nm)=>(T.skills.find(s=>s.name===nm)||{}).id;
+  const items=weak.flatMap(k=>(T.learning_library[idOf(k)]||[]).map(r=>({...r,k})));
+  if(items.length){
+    pg.append($(`<h2>Sharpen your weakest skills</h2>`));
+    pg.append($(`<p class="sub">Picked for your two lowest scores: ${esc(weak.join(" and "))}. Links open a search, so you can check the source yourself.</p>`));
+    const lib=$(`<div class="lib"></div>`);
+    items.forEach(r=>{const watch=/watch/i.test(r.type||""); const q=encodeURIComponent(r.search||r.title||""); const url=watch?"https://www.youtube.com/results?search_query="+q:"https://www.google.com/search?q="+q;
+      lib.append($(`<a class="res" href="${url}" target="_blank" rel="noopener"><span class="rt ${watch?"w":""}">${watch?"Watch":"Read"}</span><b>${esc(r.title)}</b><small>${esc(r.by||"")} · for ${esc(r.k)}</small><p>${esc(r.why||"")}</p></a>`))});
+    pg.append(lib);
+  }
+  if(F.drill) pg.append($(`<div class="drill"><b>10-minute drill:</b> ${esc(F.drill)}</div>`));
+  const mp=$(`<div class="drill" style="margin-top:18px"><b>Get your full debrief.</b> ${esc(person("mentor").name)}, your mentor, reviews all your chats: what you did right, 3 improvement areas quoting your own words, the right approach to today, and exercises for this week.<div class="row"><button class="btn" type="button">Get my debrief</button></div></div>`);
+  mp.querySelector("button").onclick=()=>sendTo("mentor",PLAN_REQ); pg.append(mp);
+  const r=$(`<div class="row" style="margin-top:24px"><button class="btn ghost" type="button" id="rescore">Re-score</button><button class="btn ghost" type="button" id="replay">Replay this day</button><button class="btn ghost" type="button" id="another">Try another job</button></div>`);
+  r.querySelector("#rescore").onclick=()=>{g.feedback=null;getFeedback()};
+  r.querySelector("#replay").onclick=()=>startPlay();
+  r.querySelector("#another").onclick=()=>{S.phase="setup"; save(); render()};
+  pg.append(r);
+  planPanels(pg,true);
+  return p;
+}
+function planPanels(pg,spoil){
+  const checks=(S.gen&&S.gen.checks)||[];
+  if(checks.length){ const d=$(`<details class="tfb" style="margin-top:24px"><summary><b>How this day was checked</b><span class="hint">${checks.filter(c=>c.status==="pass").length} of ${checks.length} checks passed${S.gen.attempt>1?" · regenerated once":""}</span></summary><div class="checks"></div></details>`);
+    checks.forEach(c=>d.querySelector(".checks").append($(`<div class="ck"><span class="pill ${c.status}">${c.status}</span><div>${esc(c.name)}<small>${esc(c.detail||"")}</small></div></div>`))); pg.append(d) }
+  if(spoil){ const txt=JSON.stringify({track:B().track,day:B().day,ledger:B().ledger},null,2);
+    const d=$(`<details class="tfb"><summary><b>See the plan file</b><span class="hint">The full day in our scenario format, hidden facts included. Copy it to save a good day.</span></summary><div class="row" style="margin:10px 0"><button class="btn ghost" type="button">Copy</button><span class="hint" id="cpd"></span></div><pre class="plan" tabindex="0"></pre></details>`);
+    const pre=d.querySelector("pre"); pre.textContent=txt;
+    d.querySelector("button").onclick=()=>{const done=()=>d.querySelector("#cpd").textContent="Copied."; try{navigator.clipboard.writeText(txt).then(done,()=>{selectAll(pre);d.querySelector("#cpd").textContent="Selected. Press Ctrl+C or Cmd+C."})}catch(e){selectAll(pre)}};
+    pg.append(d) }
+}
+function selectAll(el){const r=document.createRange(); r.selectNodeContents(el); const s=getSelection(); s.removeAllRanges(); s.addRange(r)}
+
+function nextStep(){
+  const g=G(), D=B().day;
+  if(!g.seenInbox) return ["Read your welcome email in the Inbox.","brief"];
+  const un=D.characters.map(c=>c.id).find(k=>g.unread[k]>0); if(un) return [`${first(un)} sent you a message. Read it.`,"chat:"+un];
+  for(const t of D.tasks){ if(taskDone(t)) continue;
+    if(t.kind==="submission") return [`${t.title}: write it on the Tasks page.`,"tasks"];
+    const to=chatTarget(t); if(to&&isAvail(to)) return [`${t.title}. Message ${first(to)}.`,"chat:"+to];
+  }
+  if(D.tasks.some(t=>!taskDone(t))){ const src=infoId(); return [`Keep working: ask ${first(src)} another question, or check in with a colleague.`,"chat:"+src] }
+  if(!g.feedback) return ["Your day is done. Get your practice score.","feedback"];
+  if(!g.threads.mentor.some(m=>m.t===PLAN_REQ)) return [`Get your debrief from ${person("mentor").name}, your mentor.`,"chat:mentor"];
+  return ["Review your score, replay the day, or try another job.","feedback"];
+}
+function nextBar(){ const [msg,to]=nextStep(); const b=$(`<div class="nextbar"><span><b>Next:</b> ${esc(msg)}</span><button class="btn" type="button">Go</button></div>`); if(G().view===to) b.querySelector("button").hidden=true; b.querySelector("button").onclick=()=>go(to); return b }
+function go(v){ const g=G(); if(!g) return; g.view=v; if(v.startsWith("chat:")){g.unread[v.slice(5)]=0; if(g.toast===v.slice(5)) g.toast=null} save(); render() }
+
+/* ============ render ============ */
+function render(){
+  const app=document.getElementById("app"), main=document.getElementById("main");
+  const play=S.phase==="play"&&B()&&G();
+  app.classList.toggle("solo",!play);
+  document.getElementById("clock").hidden=!play;
+  document.getElementById("restart").hidden=!play;
+  document.getElementById("newjob").hidden=S.phase==="setup";
+  document.getElementById("rolebar").textContent=play?`You: ${ROLE()}, ${B().track.company.name} · ${LEVELS[S.level].label} practice day`:"Vibe check any job";
+  main.innerHTML="";
+  const old=document.getElementById("toast"); if(old) old.remove();
+  if(!play){ document.getElementById("nav").innerHTML=""; main.append(S.phase==="gen"?viewGen():S.phase==="blocked"?viewBlocked():viewSetup()); return }
+  document.getElementById("clock").textContent=clockText();
+  renderNav();
+  const g=G(), v=g.view;
+  const node=v==="dashboard"?viewDashboard():v==="tasks"?viewTasks():v==="feedback"?viewProgress():v.startsWith("chat:")&&(charOf(v.slice(5))||v==="chat:assist"||v==="chat:mentor")?viewChat(v.slice(5)):viewBrief();
+  main.append(node);
+  if(!v.startsWith("chat:")) main.prepend(nextBar());
+  if(g.toast&&v!=="chat:"+g.toast){ const id=g.toast; const t=$(`<button class="toast" id="toast" type="button">${av(id)}<span><b>${esc(person(id).name)}</b> sent you a message. Open it</span></button>`); t.onclick=()=>{g.toast=null;go("chat:"+id)}; document.body.append(t) } else g.toast=null;
+  main.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
+}
+const armed=(btn,label,fn)=>{ if(btn.dataset.armed){delete btn.dataset.armed; btn.textContent=label; fn(); return} btn.dataset.armed="1"; btn.textContent="Tap again to confirm"; setTimeout(()=>{delete btn.dataset.armed; btn.textContent=label},3000) };
+document.getElementById("restart").onclick=(e)=>armed(e.currentTarget,"Restart day",()=>startPlay());
+document.getElementById("newjob").onclick=(e)=>armed(e.currentTarget,"New job",()=>{ if(genCtl) genCtl.abort(); S.phase="setup"; if(S.gen&&S.gen.status==="running") S.gen.status="interrupted"; save(); render() });
+render();
+</script>
