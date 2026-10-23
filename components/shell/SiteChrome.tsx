@@ -5,7 +5,7 @@ import { AccountChip } from "@/components/auth/AccountChip";
 /** Shared shell — header width is always the same so nav doesn't jump between pages. */
 export function SiteChrome({ children }: { children: ReactNode }) {
   return (
-    <div className="relative min-h-[100dvh] overflow-x-hidden bg-[var(--vw-bg)] text-white">
+    <div className="vw-legacy relative min-h-[100dvh] overflow-x-hidden bg-[var(--vw-bg)] text-white">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"

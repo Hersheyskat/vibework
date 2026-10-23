@@ -1,60 +1,26 @@
-export type ChatTurn = { role: "system" | "user" | "assistant"; content: string };
+/**
+ * Legacy helpers for the handcrafted Zippy track.
+ * Try generation uses lib/ai/client.ts (OpenRouter-only).
+ */
+import { completeText, openRouterConfigured, type ChatTurn } from "./client";
 
-function config() {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  const model = process.env.OPENROUTER_MODEL || "openai/gpt-4o";
-  const baseUrl =
-    process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1";
-  return { apiKey, model, baseUrl };
-}
-
-export function openRouterConfigured() {
-  return Boolean(process.env.OPENROUTER_API_KEY?.trim());
-}
+export { openRouterConfigured, type ChatTurn };
 
 export async function chatCompletion(opts: {
   messages: ChatTurn[];
   temperature?: number;
   jsonMode?: boolean;
 }): Promise<string> {
-  const { apiKey, model, baseUrl } = config();
-  if (!apiKey) {
-    throw new Error("OPENROUTER_API_KEY is not set");
-  }
-
-  const res = await fetch(`${baseUrl}/chat/completions`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer":
-        process.env.OPENROUTER_APP_URL || "http://localhost:3000",
-      "X-Title": process.env.OPENROUTER_APP_NAME || "VibeWork",
-    },
-    body: JSON.stringify({
-      model,
-      temperature: opts.temperature ?? 0.6,
-      messages: opts.messages,
-      ...(opts.jsonMode
-        ? { response_format: { type: "json_object" } }
-        : {}),
-    }),
+  return completeText({
+    job: "colleague",
+    purpose: "legacy_track_chat",
+    promptVersion: "legacy-v1",
+    messages: opts.messages,
+    temperature: opts.temperature,
+    jsonMode: opts.jsonMode,
   });
-
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`OpenRouter error ${res.status}: ${body.slice(0, 400)}`);
-  }
-
-  const data = (await res.json()) as {
-    choices?: { message?: { content?: string } }[];
-  };
-  const content = data.choices?.[0]?.message?.content;
-  if (!content) throw new Error("Empty model response");
-  return content.trim();
 }
 
-/** Offline / missing-key fallback so the UI stays playable. */
 export function mockCharacterReply(opts: {
   name: string;
   learnerText: string;
@@ -72,11 +38,11 @@ export function mockCharacterReply(opts: {
       };
     }
     return {
-      text: "From the pull: customers with a clean first order (under 12 min, no complaint) repeat at ~31%; late or wrong first orders repeat at ~6%. Coupon-acquired customers repeat at ~8% vs ~25% organic. (Demo reply — add OPENROUTER_API_KEY for live answers.)",
+      text: "From the pull: customers with a clean first order (under 12 min, no complaint) repeat at ~31%; late or wrong first orders repeat at ~6%. (Demo reply — live answers use OpenRouter.)",
       returned_data: true,
     };
   }
   return {
-    text: `Got it — I'll think on that. (Demo mode: set OPENROUTER_API_KEY in .env for live ${opts.name} replies.)`,
+    text: `Got it — I'll think on that. (Demo mode for ${opts.name}.)`,
   };
 }

@@ -1,60 +1,71 @@
-# VibeWork
+# VibeWork Try
 
-Mobile-friendly workplace simulation. Learners pick a role inside a fictional company and practice inside a Slack-style workspace — scripted scenario files, AI colleagues, fair scoring.
+Paste a job post, get one realistic AI-generated work-day, practise with AI colleagues, Saathi and a mentor.
 
-See [MVP.md](./MVP.md) for scope. Auth is **Google login only** (no OTP).
+- Product + engineering brief: [`docs/BRIEF.md`](./docs/BRIEF.md)
+- Scenario contract: [`docs/SCENARIO_FORMAT.md`](./docs/SCENARIO_FORMAT.md)
+- Design screens: [`docs/design/INDEX.md`](./docs/design/INDEX.md)
+- Behaviour prototype: [`prototype/vibework-try.html`](./prototype/vibework-try.html)
+- Scope snapshot: [`MVP.md`](./MVP.md)
 
 ## Quick start
 
 ```bash
 npm install
 cp .env.example .env.local
-# add OPENROUTER_API_KEY + Supabase URL/publishable key
-# enable Google provider in Supabase Auth (see below)
+# set NEXT_PUBLIC_SUPABASE_* (Google Auth) and DATABASE_URL
+npm run db:migrate   # applies drizzle/0000_init.sql when DATABASE_URL is set
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) → pick a scenario card → **Continue with Google** → Start Day 1.
+Open [http://localhost:3000](http://localhost:3000) → setup screen → **Continue with Google**.
 
-Without an OpenRouter key the app still runs in **demo mode** (scripted fallbacks for chats).
+### Environment
 
-### Supabase Google setup
+| Variable | Where | Notes |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | client | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | client | Publishable / anon key |
+| `DATABASE_URL` | server | Postgres URI for Drizzle |
+| `SUPABASE_SERVICE_ROLE_KEY` | server | Jobs / admin (M1+) |
+| `ANTHROPIC_API_KEY` | server | Generation (M1+) |
+| `INNGEST_*` | server | Background jobs (M1+) |
+| `SENTRY_DSN` / `POSTHOG_*` | server | Optional in M0 |
 
-1. Supabase Dashboard → Authentication → Providers → **Google** → enable
-2. Google Cloud OAuth Web client → Client ID + Secret into Supabase
-3. Redirect URLs:
-   - Supabase callback: `https://<project-ref>.supabase.co/auth/v1/callback` (shown in dashboard)
-   - App allow list: `http://localhost:3000/**` (covers `/auth/callback` and `?next=…`)
+Never prefix secrets with `NEXT_PUBLIC_`.
 
-## Stack
+### Supabase Google
 
-- Next.js (App Router) + TypeScript
-- Supabase Auth — Google OAuth only
-- Scenario cartridges in `/scenarios/<track-id>/`
-- OpenRouter for AI (`OPENROUTER_API_KEY`)
-- Day-run state stored under `.data/runs/` (local MVP)
+1. Auth → Providers → Google → enable  
+2. Redirect allow list includes `http://localhost:3000/**`  
+3. Callback: `/auth/callback`
 
-## Routes
+### Database
 
-| Path | Role |
-|---|---|
-| `/` | Home + scenario catalog |
-| `/tracks/[trackId]` | Scenario detail + Google / start |
-| `/play/[runId]` | Day workspace |
+Schema lives in `lib/db/schema.ts`. SQL + RLS: `drizzle/0000_init.sql`.
 
-## Scenarios
-
+```bash
+npm run db:migrate
 ```
-scenarios/zippy-pm/
-  track.json
-  days/day01.json … day10.json
-  SCENARIO_FORMAT.md
-```
-
-Add another company/role by dropping a new folder under `scenarios/` — it shows up on the homepage automatically.
 
 ## Scripts
 
-- `npm run dev` — local server
+- `npm run dev` — local Next.js
 - `npm run build` — production build
-- `npm run lint` — ESLint
+- `npm run db:migrate` — apply `drizzle/0000_init.sql`
+- `npm run db:studio` — Drizzle Studio (needs `DATABASE_URL`)
+
+## Milestone status
+
+- **M0** Foundations — setup UI, Google auth, Drizzle schema
+- **M1** Generation — OpenRouter pipeline, Building/Blocked screens, eval
+- **M2–M4** — see `docs/BRIEF.md`
+
+### M1 commands
+
+```bash
+npm test          # codeChecks + guard
+npm run eval      # fixture checks; live golden inputs if OPENROUTER_API_KEY + DATABASE_URL set
+```
+
+Build a day: sign in → paste job → **Build my work-day** → `/runs/[id]` polls until ready/blocked/failed.
