@@ -1,8 +1,14 @@
 import { bossId, infoId } from "@/lib/try/engine/cond";
 import type { GameState } from "@/lib/try/engine/types";
 import type { ScenarioBundle } from "@/lib/scenario/schema";
+import type { PracticeFeedback } from "@/lib/scenario/feedback";
+import {
+  allChatsText,
+  dayOver,
+  submissionsText,
+} from "@/lib/try/transcript";
 
-export const CHAR_PROMPT_VERSION = "char-v1";
+export const CHAR_PROMPT_VERSION = "char-v2";
 
 function person(
   bundle: ScenarioBundle,
@@ -48,15 +54,173 @@ ${(db.notes || []).join("\n")}${rev ? `\n\nVoices:\n${rev}` : ""}`;
 }
 
 function transcript(state: GameState, bundle: ScenarioBundle, id: string) {
+  const th = (state.threads[id] || []).filter((m) => m.f !== "sys");
   return (
-    (state.threads[id] || [])
-      .filter((m) => m.f !== "sys")
-      .map(
-        (m) =>
-          `${m.f === "me" ? "PLAYER" : person(bundle, id).name}: ${m.t}`,
-      )
+    th
+      .map((m) => {
+        const who = m.f === "me" ? "PLAYER" : person(bundle, id).name;
+        const shot =
+          m.imgs?.length && m === th[th.length - 1] && m.f === "me"
+            ? "\n[The player attached a screenshot with this message.]"
+            : m.imgs?.length
+              ? "\n[The player attached a screenshot here earlier.]"
+              : "";
+        return `${who}: ${m.t}${shot}`;
+      })
       .join("\n") || "(no messages)"
   );
+}
+
+function castOf(bundle: ScenarioBundle, id: string) {
+  return bundle.track.cast.find((c) => c.id === id);
+}
+
+function assistPrompt(bundle: ScenarioBundle, state: GameState): string {
+  const T = bundle.track;
+  const D = bundle.day;
+  const inf = infoId(bundle);
+  const infName = inf ? person(bundle, inf).name : "the info source";
+  return `${T.company?.world_briefing || ""}
+
+${publicText(bundle)}
+
+You are Saathi, the player's personal AI assistant inside this job simulation, like a smart, friendly colleague who sits beside them. The player is a ${T.role} at ${T.company?.name}. You can see everything below.
+How you help:
+- Summarise, compare and combine what colleagues said.
+- Simplify: plain words, short lists, at most about 12 lines.
+- Ask one sharp question back when it would improve their thinking.
+- When asked, draft a clean, precise message to a colleague (for ${infName}: each request as a metric + segment + comparison + time window).
+Limits:
+- Never invent data or numbers. Only use facts already in the chats or public screens.
+- Don't make the player's decisions or write their full submissions. You may review a draft and give 2–3 pointed suggestions.
+- You are their assistant, not a colleague inside the company.
+- Never reveal hidden facts that aren't already in the public screens or chats.
+
+YOUR SECOND KEY JOB: MAKE THEM AN AI-POWERED ${String(T.role || "ROLE").toUpperCase()}.
+Whenever it helps, and always when asked, show how a modern ${T.role} would use AI for the task in hand:
+- Name the TYPE of tool with a common example, tool-neutral.
+- Give a ready-to-paste prompt for the exact task, in a short plain block.
+- Teach safe habits: verify numbers; never paste confidential data into public AI tools; the human decides.
+Keep AI tips to about 6 lines unless asked for more.
+
+THE TEAM:
+${D.characters.map((c) => {
+  const k = castOf(bundle, c.id);
+  const locked =
+    c.available === "locked" && !state.unlocked[c.id]
+      ? " (hasn't messaged yet)"
+      : "";
+  const data =
+    c.id === inf
+      ? ` Holds the data; answers precise questions; ${c.limits?.data_pulls ?? "?"} data pulls today (clarifications are free).`
+      : "";
+  return `- ${person(bundle, c.id).name}, ${person(bundle, c.id).role}. Cares about: ${k?.cares_about || "their own area"}.${data}${locked}`;
+}).join("\n")}
+
+TODAY'S TASKS:
+${D.tasks.map((t, i) => `${i + 1}. ${t.title}: ${t.description}`).join("\n")}
+
+SUBMISSIONS SO FAR:
+${submissionsText(state, bundle)}
+
+${allChatsText(state, bundle, false)}
+
+Your conversation with the player follows. Reply only with your next message.
+
+${transcript(state, bundle, "assist")}`;
+}
+
+function mentorPrompt(
+  bundle: ScenarioBundle,
+  state: GameState,
+  feedback: PracticeFeedback | null,
+): string {
+  const T = bundle.track;
+  const D = bundle.day;
+  const m = person(bundle, "mentor");
+  const yrs = T.mentor?.years || 12;
+  const base = `${T.company?.world_briefing || ""}
+
+${publicText(bundle)}
+
+You are ${m.name}, a senior ${T.role} with ${yrs} years of experience, acting as the player's personal mentor inside this job simulation. You sit outside ${T.company?.name}. Warm, direct and practical; you teach through the player's own work and quote their words. Plain text only: no markdown symbols such as #, * or **. Use short CAPITALISED section labels and • bullets. Keep ordinary replies under 10 lines.`;
+  const work = `WHAT THE PLAYER HAS DONE:\n${submissionsText(state, bundle)}\n\n${allChatsText(state, bundle, true)}`;
+
+  if (!dayOver(state, bundle)) {
+    return `${base}
+
+THE DAY IS STILL IN PROGRESS. Coach on the ${T.role} role and on approach only: what this job really involves, how to frame a problem, how to ask colleagues precise questions, how to handle pushback from a stakeholder, how to write a short note for a boss. You may comment on HOW the player is working (for example "your question had no comparison in it"), but never reveal or hint at today's answers, hidden facts, or what any colleague knows. If asked for answers or a debrief, say you'll do a full debrief once their last task is in.
+
+TODAY'S TASKS:
+${D.tasks.map((t, i) => `${i + 1}. ${t.title}: ${t.description}`).join("\n")}
+
+${work}
+
+Your conversation with the player follows. Reply only with your next message.
+
+${transcript(state, bundle, "mentor")}`;
+  }
+
+  const sc =
+    feedback?.scores
+      ?.map((s) => `${s.skill}: ${s.score}/5 (${s.evidence || ""})`)
+      .join("\n") || "(not scored yet)";
+  const facts = D.characters
+    .filter((c) => c.hidden_facts.length)
+    .map(
+      (c) =>
+        `${person(bundle, c.id).name}: ${c.hidden_facts.map((f) => f.fact).join(" | ")}`,
+    )
+    .join("\n");
+  const lib = T.skills
+    .map((s) => {
+      const key = s.id || s.name || "";
+      const items = (key && T.learning_library?.[key]
+        ? T.learning_library[key]
+        : []) as {
+        type?: string;
+        title?: string;
+        by?: string;
+      }[];
+      const list = items
+        .map((r) => `${r.type} "${r.title}" (${r.by})`)
+        .join("; ");
+      return `${s.name}: ${list || "none"}`;
+    })
+    .join("\n");
+
+  return `${base}
+
+THE DAY IS OVER: full debrief mode. You may now discuss everything openly, including hidden facts and the expected answers.
+
+WHAT THE CHARACTERS SECRETLY KNEW:
+${facts || "(none)"}
+
+EXPECTED ANSWERS:
+${D.tasks.map((t) => `${t.title}: ${D.scoring.expected_answers[t.id] || ""}`).join("\n")}
+
+A STRONG PLAYER TODAY: ${D.scoring.strong_player || ""}
+COMMON MISTAKES: ${(D.scoring.common_mistakes || []).join("; ")}
+
+PRACTICE SCORECARD:
+${sc}
+
+RESOURCES YOU CAN RECOMMEND:
+${lib}
+
+${work}
+
+WHEN THE PLAYER ASKS FOR THEIR DEBRIEF, write it in this exact structure, under 45 lines, specific to their work:
+THE ${String(T.role || "ROLE").toUpperCase()} ROLE IN ONE MINUTE: 3 short lines, using today as the example.
+WHAT YOU DID RIGHT: 2–3 bullets, each quoting them.
+YOUR 3 IMPROVEMENT AREAS: for each, three bullets: • What you did: (quote their own chat or submission) • Better approach: (concrete) • Why it matters: (one line).
+THE RIGHT APPROACH TO TODAY: 5 numbered steps.
+EXERCISES FOR THIS WEEK: 3 exercises of about 10 minutes each, tied to their weak spots.
+READ OR WATCH: 2 items from the resources list, each with one line on why.
+
+For other questions, answer as a mentor would, briefly. Your conversation with the player follows. Reply only with your next message.
+
+${transcript(state, bundle, "mentor")}`;
 }
 
 export function characterPrompt(
@@ -64,34 +228,21 @@ export function characterPrompt(
   state: GameState,
   id: string,
   direction?: string,
-): { system: string; jsonMode: boolean; pullCount?: number } {
+  feedback?: PracticeFeedback | null,
+): { system: string; jsonMode: boolean; pullCount?: number; jobHint?: "debrief" } {
   if (id === "assist") {
-    return {
-      jsonMode: false,
-      system: `${bundle.track.company?.world_briefing || ""}
-
-${publicText(bundle)}
-
-You are Saathi, the player's personal AI assistant inside this job simulation. The player is a ${bundle.track.role} at ${bundle.track.company?.name}. Help with the work: summarise, draft precise asks, critique drafts. Never invent numbers. Never reveal hidden facts. Keep replies under ~12 lines.
-
-Conversation so far:
-${transcript(state, bundle, "assist")}
-${direction ? `\nDIRECTION: ${direction}` : ""}
-
-Reply with only your next message.`,
-    };
+    let system = assistPrompt(bundle, state);
+    if (direction) system += `\n\nDIRECTION: ${direction}`;
+    return { jsonMode: false, system };
   }
 
   if (id === "mentor") {
+    let system = mentorPrompt(bundle, state, feedback ?? null);
+    if (direction) system += `\n\nDIRECTION: ${direction}`;
     return {
       jsonMode: false,
-      system: `You are ${bundle.track.mentor?.name || "Mentor"}, ${bundle.track.mentor?.title || "mentor"}. Coach on approach during the day. Never reveal answers or hidden facts. Keep to 3–6 short lines.
-
-Conversation:
-${transcript(state, bundle, "mentor")}
-${direction ? `\nDIRECTION: ${direction}` : ""}
-
-Reply with only your next message.`,
+      system,
+      jobHint: dayOver(state, bundle) ? "debrief" : undefined,
     };
   }
 

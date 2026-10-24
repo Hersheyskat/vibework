@@ -12,7 +12,9 @@
     "db:migrate": "node --env-file=.env.local scripts/db-migrate.mjs",
     "test": "vitest run",
     "test:guard": "npx --yes tsx lib/try/guard.test.ts",
-    "eval": "npx --yes tsx --env-file=.env.local scripts/eval.ts"
+    "test:e2e": "playwright test",
+    "eval": "npx --yes tsx --env-file=.env.local scripts/eval.ts",
+    "shelf:seed": "npx --yes tsx --env-file=.env.local scripts/seed-shelf.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -26,6 +28,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.51.1",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

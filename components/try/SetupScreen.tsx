@@ -20,12 +20,23 @@ type Props = {
   learnerLabel: string | null;
 };
 
+type AllowanceInfo = {
+  remainingToday: number;
+  remainingMonth: number;
+  daysPerDay: number;
+  daysPerMonth: number;
+  ok: boolean;
+  reason: string | null;
+};
+
 export function SetupScreen({ signedIn, learnerLabel }: Props) {
   const router = useRouter();
   const [input, setInput] = useState(SAMPLE_JOB);
   const [level, setLevel] = useState<LevelId>("medium");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [allowance, setAllowance] = useState<AllowanceInfo | null>(null);
+  const [budgetPaused, setBudgetPaused] = useState(false);
 
   useEffect(() => {
     const pre = sessionStorage.getItem("vw-try-prefill");
@@ -34,6 +45,36 @@ export function SetupScreen({ signedIn, learnerLabel }: Props) {
       sessionStorage.removeItem("vw-try-prefill");
     }
   }, []);
+
+  useEffect(() => {
+    if (!signedIn) {
+      setAllowance(null);
+      return;
+    }
+    let cancelled = false;
+    void fetch("/api/me/allowance")
+      .then((r) => r.json())
+      .then(
+        (body: {
+          allowance?: AllowanceInfo;
+          budgetPaused?: boolean;
+          budgetReason?: string;
+        }) => {
+          if (cancelled) return;
+          if (body.allowance) setAllowance(body.allowance);
+          setBudgetPaused(Boolean(body.budgetPaused));
+          if (body.budgetPaused && body.budgetReason) {
+            setError(body.budgetReason);
+          }
+        },
+      )
+      .catch(() => {
+        /* ignore */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [signedIn]);
 
   const charHint = useMemo(() => {
     if (input.length <= JOB_INPUT_MAX) return null;
@@ -94,6 +135,17 @@ export function SetupScreen({ signedIn, learnerLabel }: Props) {
         <div className="auth-banner">
           <p>
             Signed in as <strong>{learnerLabel ?? "you"}</strong>
+            {allowance ? (
+              <>
+                {" "}
+                ·{" "}
+                <span className="hint">
+                  {allowance.remainingToday} of {allowance.daysPerDay} free
+                  builds left today · {allowance.remainingMonth} of{" "}
+                  {allowance.daysPerMonth} this month
+                </span>
+              </>
+            ) : null}
           </p>
         </div>
       )}
@@ -156,11 +208,17 @@ export function SetupScreen({ signedIn, learnerLabel }: Props) {
           type="button"
           className="btn"
           onClick={onBuild}
-          disabled={pending}
+          disabled={
+            pending ||
+            budgetPaused ||
+            Boolean(allowance && !allowance.ok)
+          }
         >
           {pending ? "Starting…" : "Build my work-day"}
         </button>
-        <span className="hint">Takes 1–2 minutes. Uses OpenRouter on the server.</span>
+        <span className="hint">
+          Takes 1–2 minutes. Uses OpenRouter on the server.
+        </span>
       </div>
 
       <div className="flow">

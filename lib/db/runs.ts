@@ -25,6 +25,17 @@ export type GenProgress = {
   err: string | null;
   structural?: boolean;
   stage: Record<string, string>;
+  /** Plain-language stage for customers (never "failed" / check names). */
+  customerStage?: string;
+};
+
+export type ShelfOfferPayload = {
+  roleKey: string;
+  label: string;
+  message: string;
+  readyDayId: string;
+  variant: number;
+  fromShelf: true;
 };
 
 export type RunPayload = {
@@ -33,6 +44,10 @@ export type RunPayload = {
   summary?: unknown;
   adjacent_roles?: string[];
   regulation_banner?: string | null;
+  /** Haiku “your role in a minute” while building. */
+  role_minute?: string | null;
+  /** Nearest ready-made day offered after recovery (BRIEF shelf). */
+  shelf_offer?: ShelfOfferPayload | null;
 };
 
 export type RunRow = {

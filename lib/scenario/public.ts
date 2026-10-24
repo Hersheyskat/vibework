@@ -1,3 +1,5 @@
+import type { PracticeFeedback } from "./feedback";
+import { feedbackTotal } from "./feedback";
 import type { ScenarioBundle } from "./schema";
 import type { GameState } from "@/lib/try/engine/types";
 import {
@@ -8,6 +10,7 @@ import {
   nextStep,
   taskDone,
 } from "@/lib/try/engine/cond";
+import { dayOver } from "@/lib/try/transcript";
 
 const SECRET_KEYS = [
   "world_briefing",
@@ -33,19 +36,63 @@ export function toPublicGame(opts: {
   level: string;
   bundle: ScenarioBundle;
   state: GameState;
+  feedback?: PracticeFeedback | null;
+  gameStatus?: string;
 }) {
   const { bundle, state, gameId, runId, level } = opts;
+  const feedback = opts.feedback ?? null;
+  const scored = Boolean(feedback);
   const boss = bossId(bundle);
   const info = infoId(bundle);
-  const [nextMsg, nextView] = nextStep(state, bundle);
+  const [nextMsg, nextView] = nextStep(state, bundle, {
+    scored,
+    hasFeedback: scored,
+  });
 
   const castOf = (id: string) => bundle.track.cast.find((c) => c.id === id);
+
+  const learning: {
+    skill: string;
+    items: { type: string; title: string; by: string; why: string; search: string }[];
+  }[] = [];
+  if (scored && feedback) {
+    const weak = [...feedback.scores]
+      .sort((a, b) => a.score - b.score)
+      .slice(0, 2)
+      .map((s) => s.skill);
+    for (const skillName of weak) {
+      const skill = bundle.track.skills.find((s) => s.name === skillName);
+      if (!skill?.id) continue;
+      const raw = (bundle.track.learning_library?.[skill.id] || []) as {
+        type?: string;
+        title?: string;
+        by?: string;
+        why?: string;
+        search?: string;
+      }[];
+      learning.push({
+        skill: skillName,
+        items: raw.slice(0, 3).map((r) => ({
+          type: String(r.type || "Read"),
+          title: String(r.title || ""),
+          by: String(r.by || ""),
+          why: String(r.why || ""),
+          search: String(r.search || r.title || ""),
+        })),
+      });
+    }
+  }
 
   return {
     gameId,
     runId,
     level,
-    status: "playing" as const,
+    status: scored
+      ? ("scored" as const)
+      : opts.gameStatus === "scored"
+        ? ("scored" as const)
+        : ("playing" as const),
+    dayOver: dayOver(state, bundle),
     clock: clockText(state, bundle),
     view: state.view,
     next: { message: nextMsg, view: nextView },
@@ -58,6 +105,11 @@ export function toPublicGame(opts: {
     title: bundle.track.title || "",
     theme: bundle.day.theme || "",
     practised: bundle.day.practised || [],
+    skills: bundle.track.skills.map((s) => ({
+      id: s.id,
+      name: s.name,
+      description: s.description || "",
+    })),
     public: {
       inbox: bundle.day.public.inbox,
       dashboard: bundle.day.public.dashboard,
@@ -113,6 +165,10 @@ export function toPublicGame(opts: {
         (state.subHist[t.id] || []).length < 2,
       revising: Boolean(state.revising[t.id]),
       draft: state.tdraft[t.id] || "",
+      // Only after scoring (BRIEF)
+      expectedAnswer: scored
+        ? bundle.day.scoring.expected_answers[t.id] || ""
+        : undefined,
     })),
     threads: Object.fromEntries(
       Object.entries(state.threads).map(([id, msgs]) => [
@@ -121,6 +177,7 @@ export function toPublicGame(opts: {
           from: m.f,
           text: m.t,
           returned_data: m.returned_data,
+          imgs: m.imgs,
         })),
       ]),
     ),
@@ -140,6 +197,18 @@ export function toPublicGame(opts: {
         unread: state.unread.mentor || 0,
       },
     },
+    feedback: scored
+      ? {
+          ...feedback!,
+          total: feedbackTotal(feedback!),
+          practiceLabel: "Practice score · not certified",
+        }
+      : null,
+    learning,
+    drill: scored
+      ? feedback?.drill || bundle.day.scoring.drill || ""
+      : null,
+    seniorView: scored ? feedback?.senior || bundle.day.scoring.senior_view || "" : null,
   };
 }
 
@@ -153,7 +222,6 @@ export function containsSecretKeys(payload: unknown): string[] {
     }
     for (const [k, v] of Object.entries(o as Record<string, unknown>)) {
       if ((SECRET_KEYS as readonly string[]).includes(k)) found.add(k);
-      // Also catch secret text if somehow leaked as string keys in nested objects
       walk(v);
     }
   };

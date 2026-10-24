@@ -1,10 +1,20 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Bricolage_Grotesque,
   JetBrains_Mono,
   Source_Sans_3,
 } from "next/font/google";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#3b2fb8" },
+    { media: "(prefers-color-scheme: dark)", color: "#13111f" },
+  ],
+};
 
 const display = Bricolage_Grotesque({
   variable: "--font-display",

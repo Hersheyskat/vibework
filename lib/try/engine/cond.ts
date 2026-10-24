@@ -113,6 +113,7 @@ function chatTarget(t: Task): string | null {
 export function nextStep(
   state: GameState,
   bundle: ScenarioBundle,
+  opts?: { scored?: boolean; hasFeedback?: boolean },
 ): [string, string] {
   if (!state.seenInbox)
     return ["Read your welcome email in the Inbox.", "brief"];
@@ -145,8 +146,16 @@ export function nextStep(
       src ? `chat:${src}` : "tasks",
     ];
   }
-  return [
-    "Your day is done. Scoring ships in Milestone M3 — explore chats meanwhile.",
-    "tasks",
-  ];
+  if (!opts?.hasFeedback && !opts?.scored) {
+    return ["Your day is done. Get your practice score.", "feedback"];
+  }
+  const mentorName =
+    bundle.track.mentor?.name?.split(" ")[0] || "your mentor";
+  const asked = (state.threads.mentor || []).some((m) =>
+    /end-of-day debrief|give me my debrief/i.test(m.t),
+  );
+  if (!asked) {
+    return [`Get your debrief from ${mentorName}.`, "chat:mentor"];
+  }
+  return ["Review your score, replay the day, or try another job.", "feedback"];
 }

@@ -7,6 +7,7 @@ Paste a job post, get one realistic AI-generated work-day, practise with AI coll
 - Design screens: [`docs/design/INDEX.md`](./docs/design/INDEX.md)
 - Behaviour prototype: [`prototype/vibework-try.html`](./prototype/vibework-try.html)
 - Scope snapshot: [`MVP.md`](./MVP.md)
+- Complete vs remaining: [`docs/STATUS.md`](./docs/STATUS.md)
 
 ## Quick start
 
@@ -57,9 +58,12 @@ npm run db:migrate
 
 ## Milestone status
 
-- **M0** Foundations — setup UI, Google auth, Drizzle schema
-- **M1** Generation — OpenRouter pipeline, Building/Blocked screens, eval
-- **M2–M4** — see `docs/BRIEF.md`
+Full checklist: [`docs/STATUS.md`](./docs/STATUS.md).
+
+- **M0** Foundations — done
+- **M1** Generation — mostly done (OpenRouter pipeline, Building/Blocked, eval)
+- **M2** Playing — partial (playable; customer building/recovery open)
+- **M3–M4** — mostly open; see STATUS
 
 ### M1 commands
 

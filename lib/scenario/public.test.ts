@@ -30,5 +30,42 @@ describe("public allowlist", () => {
     expect(text).not.toMatch(/persona/);
     expect(text).not.toMatch(/expected_answers/);
     expect(text).not.toMatch(/"ledger"/);
+    expect(pub.feedback).toBeNull();
+    expect(pub.dayOver).toBe(false);
+  });
+
+  it("exposes expectedAnswer only after scoring", () => {
+    const raw = JSON.parse(
+      readFileSync(
+        resolve("scenarios/example/example-bundle-zippy-medium.json"),
+        "utf8",
+      ),
+    );
+    const bundle = normalize(raw, "medium")!;
+    const state = freshGameState(bundle);
+    const scored = toPublicGame({
+      gameId: "g1",
+      runId: "r1",
+      level: "medium",
+      bundle,
+      state,
+      feedback: {
+        verdict: "Solid start",
+        scores: bundle.track.skills.map((s) => ({
+          skill: s.name || "Skill",
+          score: 3,
+          evidence: "ok",
+        })),
+        strengths: [],
+        improve: [],
+        tasks: [],
+        senior: "",
+        missed: [],
+        drill: "practice",
+      },
+    });
+    expect(scored.feedback?.total).toBe(18);
+    expect(scored.tasks[0]?.expectedAnswer).toBeTruthy();
+    expect(containsSecretKeys(scored)).toEqual([]);
   });
 });

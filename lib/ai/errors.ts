@@ -13,8 +13,12 @@ export function copyFor(code: string): string {
     invalid_json: "The AI's answer came back garbled. Try again.",
     missing_key: "OPENROUTER_API_KEY is not set on the server.",
     timeout: "The AI took too long. Try again.",
+    budget_paused:
+      "We're pausing new work-days for today while we stay inside our AI budget. Try again tomorrow.",
+    cap_reached:
+      "You've used your free builds for now. Resume a past day from My days, or come back later.",
   };
-  return map[code] || "The reply didn't come through. Try again.";
+  return map[code] || "Something went wrong. Try again, or open My days for a day you've already built.";
 }
 
 export class AiError extends Error {

@@ -1,9 +1,11 @@
 import { completeJson, completeText } from "@/lib/ai/client";
 import { characterPrompt, CHAR_PROMPT_VERSION } from "@/lib/ai/prompts/character";
+import { getScore } from "@/lib/db/scores";
 import { idSlug } from "@/lib/scenario/normalize";
 import type { ScenarioBundle } from "@/lib/scenario/schema";
 import { bossId } from "@/lib/try/engine/cond";
 import type { GameState } from "@/lib/try/engine/types";
+import { dayOver } from "@/lib/try/transcript";
 import { z } from "zod";
 
 const dataReplySchema = z.object({
@@ -19,11 +21,17 @@ export async function generateCharacterReply(opts: {
   gameId: string;
   runId?: string;
 }): Promise<{ text: string; returnedData: boolean }> {
+  const score =
+    opts.characterId === "mentor" && dayOver(opts.state, opts.bundle)
+      ? await getScore(opts.gameId)
+      : null;
+
   const built = characterPrompt(
     opts.bundle,
     opts.state,
     opts.characterId,
     opts.direction,
+    score?.feedback ?? null,
   );
 
   if (built.jsonMode) {
@@ -44,7 +52,9 @@ export async function generateCharacterReply(opts: {
     opts.characterId === "assist"
       ? "saathi"
       : opts.characterId === "mentor"
-        ? "mentor"
+        ? built.jobHint === "debrief"
+          ? "debrief"
+          : "mentor"
         : idSlug(opts.characterId) === bossId(opts.bundle)
           ? "boss"
           : "colleague";
@@ -56,7 +66,7 @@ export async function generateCharacterReply(opts: {
     gameId: opts.gameId,
     runId: opts.runId,
     messages: [{ role: "user", content: built.system }],
-    maxTokens: 600,
+    maxTokens: built.jobHint === "debrief" ? 2500 : 600,
     temperature: 0.5,
   });
   return { text: text.trim() || "…", returnedData: false };

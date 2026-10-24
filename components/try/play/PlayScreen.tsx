@@ -4,16 +4,61 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TryShell } from "@/components/try/TryShell";
 import { LEVELS, type LevelId } from "@/lib/try/levels";
+import { DEBRIEF_REQUEST } from "@/lib/try/transcript";
+import { attachMic, shrinkImage } from "./mic";
+import { ProgressPane } from "./ProgressPane";
 import type { PublicGame } from "./types";
 
 function PlayHeader({ clock }: { clock: string }) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <>
-      <Link href="/me" className="reset">
-        My days
-      </Link>
-      <span className="clock">{clock}</span>
-    </>
+    <div className="relative flex items-center gap-2">
+      <div className="hidden min-[901px]:flex items-center gap-2">
+        <Link href="/me" className="reset">
+          My days
+        </Link>
+        <span className="clock">{clock}</span>
+      </div>
+      <div className="flex min-[901px]:hidden items-center gap-2">
+        <span className="clock text-xs">{clock}</span>
+        <button
+          type="button"
+          className={`hdr-burger${open ? " open" : ""}`}
+          aria-expanded={open}
+          aria-label={open ? "Close menu" : "Open menu"}
+          onClick={() => setOpen((v) => !v)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+        {open ? (
+          <button
+            type="button"
+            className="hdr-backdrop"
+            aria-label="Close menu"
+            onClick={() => setOpen(false)}
+          />
+        ) : null}
+        <div className={`hdr-drawer${open ? " open" : ""}`}>
+          <Link
+            href="/me"
+            className="hdr-drawer-item"
+            onClick={() => setOpen(false)}
+          >
+            My days
+          </Link>
+          <Link
+            href="/"
+            className="hdr-drawer-item"
+            onClick={() => setOpen(false)}
+          >
+            Home
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -88,10 +133,16 @@ export function PlayScreen({ gameId }: { gameId: string }) {
   const [game, setGame] = useState<PublicGame | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [scoring, setScoring] = useState(false);
   const [localDraft, setLocalDraft] = useState("");
   const [taskDrafts, setTaskDrafts] = useState<Record<string, string>>({});
+  const [pendingImgs, setPendingImgs] = useState<string[]>([]);
+  const [micHint, setMicHint] = useState<string | null>(null);
   const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const msgsRef = useRef<HTMLDivElement | null>(null);
+  const composeTaRef = useRef<HTMLTextAreaElement | null>(null);
+  const micBtnRef = useRef<HTMLButtonElement | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/games/${gameId}`);
@@ -179,17 +230,34 @@ export function PlayScreen({ gameId }: { gameId: string }) {
     msgsRef.current?.scrollTo(0, msgsRef.current.scrollHeight);
   }, [game?.threads, busy, game?.view]);
 
-  async function sendChat(to: string, text: string) {
-    const trimmed = text.trim();
-    if (!trimmed || busy || !game) return;
+  useEffect(() => {
+    const btn = micBtnRef.current;
+    const ta = composeTaRef.current;
+    if (!btn || !ta || !game?.view.startsWith("chat:")) return;
+    return attachMic(btn, ta, setMicHint, (v) => {
+      setLocalDraft(v);
+      const id = game.view.slice(5);
+      saveDraft(id, v);
+    });
+  }, [game?.view, saveDraft]);
+
+  async function sendChat(to: string, text: string, images?: string[]) {
+    const imgs = images || pendingImgs;
+    const trimmed = text.trim() || (imgs.length ? "(see screenshot)" : "");
+    if ((!trimmed && !imgs.length) || busy || !game) return;
     setBusy(to);
     setLocalDraft("");
+    setPendingImgs([]);
+    setMicHint(null);
     setGame({
       ...game,
       drafts: { ...game.drafts, [to]: "" },
       threads: {
         ...game.threads,
-        [to]: [...(game.threads[to] || []), { from: "me", text: trimmed }],
+        [to]: [
+          ...(game.threads[to] || []),
+          { from: "me", text: trimmed, imgs: imgs.length ? imgs : undefined },
+        ],
       },
       view: `chat:${to}`,
     });
@@ -197,7 +265,7 @@ export function PlayScreen({ gameId }: { gameId: string }) {
       const res = await fetch(`/api/games/${gameId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ to, text: trimmed }),
+        body: JSON.stringify({ to, text: trimmed, images: imgs }),
       });
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as {
@@ -243,6 +311,40 @@ export function PlayScreen({ gameId }: { gameId: string }) {
     } finally {
       setBusy(null);
     }
+  }
+
+  async function runScore(rescore = false) {
+    if (!game || scoring) return;
+    setScoring(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/games/${gameId}/score`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rescore }),
+      });
+      const body = (await res.json().catch(() => ({}))) as {
+        game?: PublicGame;
+        error?: string;
+      };
+      if (!res.ok || !body.game) throw new Error(body.error || "Score failed");
+      setGame(body.game);
+      await go("feedback");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Score failed");
+    } finally {
+      setScoring(false);
+    }
+  }
+
+  async function useAsDraftTo(colleagueId: string) {
+    if (!game) return;
+    const th = game.threads.assist || [];
+    const last = [...th].reverse().find((m) => m.from === "them");
+    if (!last?.text) return;
+    setLocalDraft(last.text);
+    saveDraft(colleagueId, last.text);
+    await go(`chat:${colleagueId}`);
   }
 
   async function submitTask(taskId: string, text: string, revise: boolean) {
@@ -326,6 +428,16 @@ export function PlayScreen({ gameId }: { gameId: string }) {
         label="Tasks"
         sub="Today's work"
       />
+      <NavBtn
+        current={game.view === "feedback"}
+        onClick={() => void go("feedback")}
+        label="Progress"
+        sub={
+          game.feedback
+            ? `Practice score ${game.feedback.total}/30`
+            : "Score & learning"
+        }
+      />
       <div className="navlabel">Support</div>
       <NavBtn
         current={game.view === "chat:assist"}
@@ -373,7 +485,7 @@ export function PlayScreen({ gameId }: { gameId: string }) {
 
       {!chatId ? (
         <div className="nextbar">
-          <span>
+          <span className="nextbar-msg">
             <b>Next:</b> {game.next.message}
           </span>
           {game.view !== game.next.view ? (
@@ -420,6 +532,15 @@ export function PlayScreen({ gameId }: { gameId: string }) {
                 className={`msg ${m.from === "me" ? "me" : m.from === "sys" ? "sys" : ""}`}
               >
                 {m.text}
+                {(m.imgs || []).map((src, k) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={k}
+                    src={src}
+                    className="mimg"
+                    alt={`Attached screenshot ${k + 1}`}
+                  />
+                ))}
               </div>
             ))}
             {busy === chatId ? (
@@ -449,17 +570,135 @@ export function PlayScreen({ gameId }: { gameId: string }) {
                     {q.replace("PM", game.role.split(" ")[0] || "role")}
                   </button>
                 ))}
+                {game.characters
+                  .filter((c) => !c.locked)
+                  .map((c) => (
+                    <button
+                      key={`draft-${c.id}`}
+                      type="button"
+                      className="useb"
+                      onClick={() => void useAsDraftTo(c.id)}
+                    >
+                      Use as a draft to {firstName(c.name)}
+                    </button>
+                  ))}
+              </div>
+            ) : null}
+            {chatId === "mentor" && !busy ? (
+              <div className="chips">
+                {(game.dayOver
+                  ? [
+                      "Give me my debrief",
+                      "Show me the right approach to today",
+                      "What should I practise first?",
+                    ]
+                  : [
+                      `What does a ${game.role} actually do all day?`,
+                      "How do I ask colleagues good questions?",
+                      "How should I handle a pushy colleague?",
+                    ]
+                ).map((q) => (
+                  <button
+                    key={q}
+                    type="button"
+                    className="useb"
+                    onClick={() =>
+                      void sendChat(
+                        "mentor",
+                        q === "Give me my debrief" ? DEBRIEF_REQUEST : q,
+                      )
+                    }
+                  >
+                    {q}
+                  </button>
+                ))}
               </div>
             ) : null}
           </div>
+          {pendingImgs.length ? (
+            <div className="pending">
+              {pendingImgs.map((src, i) => (
+                <span className="thumb" key={i}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={src} alt={`Screenshot ${i + 1} to send`} />
+                  <button
+                    type="button"
+                    className="thx"
+                    aria-label={`Remove screenshot ${i + 1}`}
+                    onClick={() =>
+                      setPendingImgs((L) => L.filter((_, j) => j !== i))
+                    }
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+              <span className="hint">
+                {pendingImgs.length} of 2 screenshots ready.
+              </span>
+            </div>
+          ) : null}
+          {micHint ? <p className="note">{micHint}</p> : null}
           <form
             className="compose"
             onSubmit={(e) => {
               e.preventDefault();
-              void sendChat(chatId, localDraft);
+              void sendChat(chatId, localDraft, pendingImgs);
             }}
           >
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              multiple
+              hidden
+              onChange={(e) => {
+                const files = Array.from(e.target.files || []);
+                e.target.value = "";
+                void (async () => {
+                  for (const file of files) {
+                    if (!file.type.startsWith("image/")) continue;
+                    setPendingImgs((L) => {
+                      if (L.length >= 2) {
+                        setMicHint("You can attach up to 2 screenshots per message.");
+                        return L;
+                      }
+                      return L;
+                    });
+                    try {
+                      const data = await shrinkImage(file);
+                      setPendingImgs((L) =>
+                        L.length >= 2 ? L : [...L, data],
+                      );
+                    } catch {
+                      setMicHint("One image couldn't be read. Try a PNG or JPG.");
+                    }
+                  }
+                })();
+              }}
+            />
+            <button
+              className="attach"
+              type="button"
+              title="Attach a screenshot"
+              aria-label="Attach a screenshot"
+              disabled={Boolean(lockMsg) || Boolean(busy)}
+              onClick={() => fileRef.current?.click()}
+            >
+              📎
+            </button>
+            <button
+              ref={micBtnRef}
+              className="attach"
+              type="button"
+              title="Dictate"
+              aria-label="Dictate"
+              disabled={Boolean(lockMsg) || Boolean(busy)}
+            >
+              🎤
+            </button>
             <textarea
+              ref={composeTaRef}
               value={localDraft}
               disabled={Boolean(lockMsg) || Boolean(busy)}
               placeholder={
@@ -475,7 +714,7 @@ export function PlayScreen({ gameId }: { gameId: string }) {
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
-                  void sendChat(chatId, localDraft);
+                  void sendChat(chatId, localDraft, pendingImgs);
                 }
               }}
             />
@@ -490,16 +729,25 @@ export function PlayScreen({ gameId }: { gameId: string }) {
         </div>
       ) : game.view === "dashboard" ? (
         <DashboardPane game={game} onGo={go} />
+      ) : game.view === "feedback" ? (
+        <ProgressPane
+          game={game}
+          scoring={scoring}
+          onScore={(r) => void runScore(r)}
+          onGo={(v) => void go(v)}
+        />
       ) : game.view === "tasks" ? (
         <TasksPane
           game={game}
           drafts={taskDrafts}
           busy={busy}
+          scoring={scoring}
           onDraft={(id, text) => {
             setTaskDrafts((d) => ({ ...d, [id]: text }));
             saveDraft(`task:${id}`, text);
           }}
           onSubmit={(id, text, revise) => void submitTask(id, text, revise)}
+          onScore={() => void runScore(false)}
           onStartRevise={async (id) => {
             const res = await fetch(`/api/games/${gameId}/submissions`, {
               method: "POST",
@@ -734,8 +982,10 @@ function TasksPane({
   game,
   drafts,
   busy,
+  scoring,
   onDraft,
   onSubmit,
+  onScore,
   onStartRevise,
   onCancelRevise,
   onGo,
@@ -743,8 +993,10 @@ function TasksPane({
   game: PublicGame;
   drafts: Record<string, string>;
   busy: string | null;
+  scoring: boolean;
   onDraft: (id: string, text: string) => void;
   onSubmit: (id: string, text: string, revise: boolean) => void;
+  onScore: () => void;
   onStartRevise: (id: string) => void;
   onCancelRevise: (id: string) => void;
   onGo: (v: string) => void;
@@ -890,6 +1142,26 @@ function TasksPane({
           );
         })}
       </div>
+      {game.dayOver ? (
+        <div className="row" style={{ marginTop: 16 }}>
+          <button
+            type="button"
+            className="btn"
+            disabled={scoring}
+            onClick={onScore}
+          >
+            {scoring
+              ? "Scoring…"
+              : game.feedback
+                ? "View practice score"
+                : "Finish day and get my practice score"}
+          </button>
+          <span className="hint">
+            Reply to your boss first if you like; your latest submission is
+            scored.
+          </span>
+        </div>
+      ) : null}
     </div>
   );
 }

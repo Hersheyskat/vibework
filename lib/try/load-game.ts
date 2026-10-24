@@ -7,7 +7,9 @@ import {
   saveGameState,
   type GameRow,
 } from "@/lib/db/games";
+import { getScore } from "@/lib/db/scores";
 import { toPublicGame } from "@/lib/scenario/public";
+import type { PracticeFeedback } from "@/lib/scenario/feedback";
 import type { ScenarioBundle } from "@/lib/scenario/schema";
 import type { GameState } from "@/lib/try/engine/types";
 
@@ -29,14 +31,24 @@ export async function loadOwnedGame(
   return { row, bundle, level };
 }
 
-export function publicPayload(loaded: LoadedGame) {
+export function publicPayload(
+  loaded: LoadedGame,
+  feedback?: PracticeFeedback | null,
+) {
   return toPublicGame({
     gameId: loaded.row.id,
     runId: loaded.row.runId,
     level: loaded.level,
     bundle: loaded.bundle,
     state: loaded.row.state,
+    feedback: feedback ?? null,
+    gameStatus: loaded.row.status,
   });
+}
+
+export async function publicPayloadAsync(loaded: LoadedGame) {
+  const score = await getScore(loaded.row.id);
+  return publicPayload(loaded, score?.feedback ?? null);
 }
 
 export async function persistState(gameId: string, state: GameState) {

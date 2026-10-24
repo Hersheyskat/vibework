@@ -2,33 +2,46 @@
 
 Source of truth: [`docs/BRIEF.md`](./docs/BRIEF.md). Behaviour spec: [`prototype/vibework-try.html`](./prototype/vibework-try.html). Standing rules: [`.cursor/rules/vibework.mdc`](./.cursor/rules/vibework.mdc).
 
+**Implementation gap map (complete vs remaining):** [`docs/STATUS.md`](./docs/STATUS.md).
+
 ## Product
 
 Paste a job post (or type a role), pick a level, get one AI-generated work-day at a fictional company: boss, colleagues, inbox, dashboard, twist, four tasks, practice score and mentor debrief.
 
 ## Auth
 
-**Google login** via Supabase Auth (our existing setup).
+**Google login** via Supabase Auth.
 
 - No phone OTP for now
-- Email OTP deferred (brief allows it; we keep Google-only until Hersh asks)
+- Email OTP deferred (brief allows it; Google-only until Hersh asks)
 
-## Current milestone
+## Current milestone focus
 
-**M1 · Generation** — OpenRouter-only AI; guard → screen → plan → check → repair; Building / Blocked screens. Play day is M2.
+See `docs/STATUS.md`. Snapshot:
 
-**AI:** only `OPENROUTER_API_KEY` (Claude models via OpenRouter slugs). No Anthropic direct key.
+| Milestone | Status |
+| --- | --- |
+| M0 Foundations | Done |
+| M1 Generation | Done (two-pass + customer building) |
+| M2 Playing the day | Mostly done (play + shelf fallback; polish optional) |
+| M3 Support & scoring | Mostly missing |
+| M4 Hardening | Barely started |
+
+**AI:** only `OPENROUTER_API_KEY` (Claude via OpenRouter slugs). No Anthropic direct key.
 
 ## Stack
 
-Next.js App Router · TypeScript strict · Supabase (Auth + Postgres) · Drizzle · Anthropic (M1+) · Inngest (M1+) · Vercel
+Next.js App Router · TypeScript strict · Supabase (Auth + Postgres) · Drizzle · OpenRouter · Inngest (optional) · Vercel
 
 ## Routes
 
 | Path | Role |
 | --- | --- |
 | `/` | Try setup (paste job, pick level) |
-| `/tracks/[trackId]` | Legacy handcrafted Zippy catalog (kept for now) |
+| `/runs/[id]` | Building / blocked (today: tester-style checks) |
+| `/games/[id]` | Play the generated day |
+| `/me` | Past days |
+| `/tracks/[trackId]` | Legacy handcrafted Zippy catalog |
 | `/play/[runId]` | Legacy day workspace |
 
 ## In scope (full MVP, M0–M4)

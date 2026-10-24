@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { TryShell } from "@/components/try/TryShell";
 import { BuildingScreen } from "@/components/try/BuildingScreen";
 import { HeaderAccount } from "@/components/try/HeaderAccount";
+import { getHeaderSession } from "@/lib/auth/header-session";
 import { getRunForUser } from "@/lib/db/runs";
 import { createClient } from "@/lib/supabase/server";
 
@@ -35,19 +36,12 @@ export default function RunPage({
 }
 
 async function HeaderSlot() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const meta = user?.user_metadata ?? {};
-  const learnerName =
-    (typeof meta.full_name === "string" && meta.full_name) ||
-    (typeof meta.name === "string" && meta.name) ||
-    null;
+  const s = await getHeaderSession();
   return (
     <HeaderAccount
-      signedIn={Boolean(user)}
-      label={learnerName || user?.email || null}
+      signedIn={s.signedIn}
+      label={s.label}
+      isAdmin={s.isAdmin}
     />
   );
 }

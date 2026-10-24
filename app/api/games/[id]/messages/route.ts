@@ -1,21 +1,26 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { openRouterConfigured } from "@/lib/ai/client";
+import { trackEvent } from "@/lib/analytics/track";
 import { hasDbAccess } from "@/lib/db";
+import { chatCapExceeded } from "@/lib/limits/caps";
 import { createClient } from "@/lib/supabase/server";
 import {
   afterPlayerMessage,
   applyPlayerMessage,
 } from "@/lib/try/actions";
+import { dayOver } from "@/lib/try/transcript";
+import { sanitizeChatImages } from "@/lib/try/messages-route";
 import {
   loadOwnedGame,
   persistState,
-  publicPayload,
+  publicPayloadAsync,
 } from "@/lib/try/load-game";
 
 const bodySchema = z.object({
   to: z.string().min(1),
-  text: z.string().min(1),
+  text: z.string().optional().default(""),
+  images: z.array(z.string()).optional(),
 });
 
 function sseEncode(event: string, data: unknown): string {
@@ -63,14 +68,30 @@ export async function POST(
     return NextResponse.json({ error: "Game not found" }, { status: 404 });
   }
 
+  const cap = chatCapExceeded(loaded.row.state.threads);
+  if (cap) {
+    return NextResponse.json({ error: cap }, { status: 429 });
+  }
+
+  const images = sanitizeChatImages(parsed.data.images);
   const applied = applyPlayerMessage(
     loaded.row.state,
     loaded.bundle,
     parsed.data.to,
-    parsed.data.text,
+    parsed.data.text || "",
+    images,
   );
   if (!applied.ok) {
     return NextResponse.json({ error: applied.error }, { status: 400 });
+  }
+
+  const textLower = (parsed.data.text || "").toLowerCase();
+  if (
+    parsed.data.to === "mentor" &&
+    dayOver(loaded.row.state, loaded.bundle) &&
+    (textLower.includes("debrief") || textLower.includes("right approach"))
+  ) {
+    void trackEvent("debrief_opened", { gameId: id }, user.id);
   }
 
   await persistState(id, loaded.row.state);
@@ -82,7 +103,7 @@ export async function POST(
         controller.enqueue(encoder.encode(sseEncode(event, data)));
       };
       try {
-        send("state", publicPayload(loaded));
+        send("state", await publicPayloadAsync(loaded));
         const replyText = await afterPlayerMessage({
           state: loaded.row.state,
           bundle: loaded.bundle,
@@ -97,7 +118,10 @@ export async function POST(
         for (let i = 0; i < replyText.length; i += chunk) {
           send("delta", { text: replyText.slice(i, i + chunk) });
         }
-        send("done", { game: publicPayload(loaded), reply: replyText });
+        send("done", {
+          game: await publicPayloadAsync(loaded),
+          reply: replyText,
+        });
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "Reply failed";
@@ -108,7 +132,7 @@ export async function POST(
             t: "Couldn't get a reply just now. Try again in a moment.",
           });
           await persistState(id, loaded.row.state);
-          send("done", { game: publicPayload(loaded) });
+          send("done", { game: await publicPayloadAsync(loaded) });
         } catch {
           /* ignore */
         }
