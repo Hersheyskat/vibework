@@ -1,4 +1,5 @@
 import { generateDay } from "@/lib/jobs/generate-day";
+import { restockShelf } from "@/lib/shelf/restock";
 import { inngest } from "./client";
 
 export const generateDayFn = inngest.createFunction(
@@ -19,4 +20,16 @@ export const generateDayFn = inngest.createFunction(
   },
 );
 
-export const inngestFunctions = [generateDayFn];
+export const restockShelfFn = inngest.createFunction(
+  {
+    id: "shelf-restock-nightly",
+    retries: 1,
+    triggers: [{ cron: "0 2 * * *" }],
+  },
+  async ({ step }) => {
+    const result = await step.run("restock", async () => restockShelf());
+    return result;
+  },
+);
+
+export const inngestFunctions = [generateDayFn, restockShelfFn];

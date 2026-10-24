@@ -6,7 +6,7 @@ import { applyView } from "@/lib/try/actions";
 import {
   loadOwnedGame,
   persistState,
-  publicPayload,
+  publicPayloadAsync,
 } from "@/lib/try/load-game";
 
 const bodySchema = z.object({ view: z.string().min(1) });
@@ -48,5 +48,5 @@ export async function POST(
 
   applyView(loaded.row.state, parsed.data.view);
   await persistState(id, loaded.row.state);
-  return NextResponse.json(publicPayload(loaded));
+  return NextResponse.json(await publicPayloadAsync(loaded));
 }

@@ -4,6 +4,8 @@ export type ThreadMsg = {
   f: "me" | "them" | "sys";
   t: string;
   returned_data?: boolean;
+  /** Data-URL thumbnails (screenshots); capped server-side. */
+  imgs?: string[];
 };
 
 export type GameState = {

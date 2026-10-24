@@ -1,8 +1,22 @@
+export type PracticeFeedbackPublic = {
+  verdict: string;
+  scores: { skill: string; score: number; evidence: string }[];
+  strengths: string[];
+  improve: string[];
+  tasks: { task: string; gap: string }[];
+  senior: string;
+  missed: string[];
+  drill: string;
+  total: number;
+  practiceLabel: string;
+};
+
 export type PublicGame = {
   gameId: string;
   runId: string;
   level: string;
   status: string;
+  dayOver: boolean;
   clock: string;
   view: string;
   next: { message: string; view: string };
@@ -12,6 +26,7 @@ export type PublicGame = {
   title: string;
   theme: string;
   practised: string[];
+  skills: { id: string; name: string; description: string }[];
   public: {
     inbox: {
       from?: string;
@@ -61,10 +76,16 @@ export type PublicGame = {
     canRevise: boolean;
     revising: boolean;
     draft: string;
+    expectedAnswer?: string;
   }[];
   threads: Record<
     string,
-    { from: string; text: string; returned_data?: boolean }[]
+    {
+      from: string;
+      text: string;
+      returned_data?: boolean;
+      imgs?: string[];
+    }[]
   >;
   drafts: Record<string, string>;
   unread: Record<string, number>;
@@ -72,4 +93,17 @@ export type PublicGame = {
     assist: { id: string; name: string; role: string; unread: number };
     mentor: { id: string; name: string; role: string; unread: number };
   };
+  feedback: PracticeFeedbackPublic | null;
+  learning: {
+    skill: string;
+    items: {
+      type: string;
+      title: string;
+      by: string;
+      why: string;
+      search: string;
+    }[];
+  }[];
+  drill: string | null;
+  seniorView: string | null;
 };

@@ -2,10 +2,16 @@ import { after } from "next/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { openRouterConfigured } from "@/lib/ai/client";
+import { trackEvent } from "@/lib/analytics/track";
 import { hasDbAccess } from "@/lib/db";
 import { createRun } from "@/lib/db/runs";
 import { inngest, inngestConfigured } from "@/lib/inngest/client";
 import { generateDay } from "@/lib/jobs/generate-day";
+import { getAllowance } from "@/lib/limits/caps";
+import {
+  alertBudgetIfNeeded,
+  getBudgetStatus,
+} from "@/lib/limits/budget";
 import { createClient } from "@/lib/supabase/server";
 import { guardJobInput } from "@/lib/try/guard";
 import type { LevelId } from "@/lib/try/levels";
@@ -67,6 +73,31 @@ export async function POST(req: Request) {
     );
   }
 
+  const budget = await getBudgetStatus();
+  if (!budget.ok) {
+    await alertBudgetIfNeeded(budget);
+    await trackEvent("budget_paused", {
+      spentUsd: budget.spentUsd,
+      ceilingUsd: budget.ceilingUsd,
+    }, user.id);
+    return NextResponse.json(
+      { error: budget.reason, code: "budget_paused" },
+      { status: 503 },
+    );
+  }
+
+  const allowance = await getAllowance(user.id);
+  if (!allowance.ok) {
+    return NextResponse.json(
+      {
+        error: allowance.reason,
+        code: "cap_reached",
+        allowance,
+      },
+      { status: 429 },
+    );
+  }
+
   const level = parsed.data.level as LevelId;
   const runId = await createRun({
     userId: user.id,
@@ -85,6 +116,17 @@ export async function POST(req: Request) {
     },
   });
 
+  await trackEvent(
+    "job_submitted",
+    {
+      level,
+      inputLength: guarded.text.length,
+      pasted:
+        guarded.text.includes("\n") || guarded.text.split(" ").length > 8,
+    },
+    user.id,
+  );
+
   if (inngestConfigured()) {
     await inngest.send({
       name: "try/generate.requested",
@@ -101,5 +143,5 @@ export async function POST(req: Request) {
     });
   }
 
-  return NextResponse.json({ id: runId });
+  return NextResponse.json({ id: runId, allowance });
 }

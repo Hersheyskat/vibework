@@ -1,14 +1,27 @@
 import { z } from "zod";
-import { completeJson } from "@/lib/ai/client";
+import { completeJson, completeText } from "@/lib/ai/client";
 import { AiError, copyFor } from "@/lib/ai/errors";
 import { auditPrompt, AUDIT_PROMPT_VERSION } from "@/lib/ai/prompts/audit";
-import { planPrompt, PLAN_PROMPT_VERSION } from "@/lib/ai/prompts/plan";
+import {
+  planPass1Prompt,
+  planPass2Prompt,
+  PLAN_PASS1_VERSION,
+  PLAN_PASS2_VERSION,
+  PLAN_PROMPT_VERSION,
+} from "@/lib/ai/prompts/plan";
 import { repairPrompt, REPAIR_PROMPT_VERSION } from "@/lib/ai/prompts/repair";
+import {
+  roleMinutePrompt,
+  ROLE_MINUTE_PROMPT_VERSION,
+} from "@/lib/ai/prompts/role-minute";
 import { screenPrompt, SCREEN_PROMPT_VERSION } from "@/lib/ai/prompts/screen";
 import {
   codeChecks,
+  codeChecksPass1,
   failingReasons,
+  hasPass1StructuralFail,
   hasStructuralFail,
+  isProperEmployerName,
   type CheckResult,
 } from "@/lib/scenario/checks";
 import { coerceBundle } from "@/lib/scenario/coerce";
@@ -26,7 +39,10 @@ import {
   updateRun,
   type GenProgress,
 } from "@/lib/db/runs";
+import { trackEvent } from "@/lib/analytics/track";
+import { tryOfferShelf } from "@/lib/shelf/offer";
 import { BLOCK_KW, type LevelId } from "@/lib/try/levels";
+import { todaySpendUsd } from "@/lib/limits/budget";
 
 /** Very loose — normalize() + codeChecks are the real validators. */
 const looseBundle = z
@@ -52,12 +68,220 @@ async function setGen(
   });
 }
 
+function customerStageFor(step: string, attempt: number): string {
+  if (step === "screen" || step === "blocked") return "Reading your job";
+  if (step === "role_minute") return "Your role in a minute";
+  if (step === "plan" || step === "plan1") return "Setting up your company";
+  if (step === "plan2") return "Hiring your team";
+  if (step === "check" || step === "audit") return "Preparing this week's data";
+  if (step === "repair")
+    return attempt > 1
+      ? "Tuning the day"
+      : "Preparing this week's data";
+  if (step === "ready") return "Ready";
+  return "Building your work-day";
+}
+
+/** BRIEF silent recovery end: shelf offer, else mark failed (tester-only wording). */
+async function failOrShelf(opts: {
+  runId: string;
+  userId: string;
+  level: LevelId;
+  scr: ScreenResult;
+  gen: GenProgress;
+  regulationBanner: string | null;
+  roleMinute: string | null;
+  err: string;
+  structural?: boolean;
+  step: string;
+}): Promise<void> {
+  try {
+    const offer = await tryOfferShelf({
+      runId: opts.runId,
+      userId: opts.userId,
+      level: opts.level,
+      scr: opts.scr,
+      gen: opts.gen,
+      regulationBanner: opts.regulationBanner,
+      roleMinute: opts.roleMinute,
+    });
+    if (offer) return;
+  } catch {
+    // Fall through to failed
+  }
+  const gen: GenProgress = {
+    ...opts.gen,
+    status: "failed",
+    err: opts.err,
+    structural: opts.structural,
+    customerStage: "Taking longer than usual",
+  };
+    await setGen(opts.runId, "failed", opts.step, gen, {
+    screen: opts.scr,
+    regulation_banner: opts.regulationBanner,
+    role_minute: opts.roleMinute,
+    shelf_offer: null,
+  });
+  await trackEvent(
+    "run_finished",
+    {
+      ready: false,
+      outcome: "failed",
+      cost: await todaySpendUsd().catch(() => 0),
+    },
+    opts.userId,
+  );
+}
+
+async function planTwoPass(opts: {
+  runId: string;
+  scr: ScreenResult;
+  input: string;
+  level: LevelId;
+  gen: GenProgress;
+  regulationBanner: string | null;
+  issues: string[] | null;
+}): Promise<{
+  bundle: ScenarioBundle;
+  model: string;
+  gen: GenProgress;
+  pass1Failed?: string[];
+}> {
+  let gen = {
+    ...opts.gen,
+    step: "plan1",
+    customerStage: customerStageFor("plan1", opts.gen.attempt),
+  };
+  await setGen(opts.runId, "planning", "plan1", gen, {
+    screen: opts.scr,
+    regulation_banner: opts.regulationBanner,
+  });
+
+  const pass1 = await completeJson({
+    job: "plan",
+    purpose: "plan_pass1",
+    promptVersion: PLAN_PASS1_VERSION,
+    runId: opts.runId,
+    maxTokens: 12000,
+    messages: [
+      {
+        role: "user",
+        content:
+          planPass1Prompt(opts.scr, opts.input, opts.level) +
+          (opts.issues?.length
+            ? `\n\nEarlier attempt failed:\n- ${opts.issues.join("\n- ")}\nFix those in this Pass 1 core.\n`
+            : ""),
+      },
+    ],
+    schema: looseBundle,
+  });
+
+  const pass1Bundle = normalize(coerceBundle(pass1.data), opts.level);
+  if (!pass1Bundle) {
+    throw new AiError(
+      "invalid_json",
+      "Pass 1 was not a valid scenario core.",
+    );
+  }
+
+  const p1Checks = codeChecksPass1(pass1Bundle, opts.level, opts.scr);
+  const p1Fails = failingReasons(p1Checks);
+  gen = {
+    ...gen,
+    checks: p1Checks,
+    stage: { ...gen.stage, plan1: p1Fails.length ? "bad" : "ok" },
+  };
+
+  if (p1Fails.length && hasPass1StructuralFail(p1Checks)) {
+    await insertPlan({
+      runId: opts.runId,
+      attempt: opts.gen.attempt,
+      mode: "fresh",
+      bundle: pass1Bundle,
+      checks: p1Checks,
+      audit: null,
+      passed: false,
+      promptVersion: PLAN_PASS1_VERSION,
+      model: pass1.model,
+    });
+    return {
+      bundle: pass1Bundle,
+      model: pass1.model,
+      gen,
+      pass1Failed: p1Fails,
+    };
+  }
+
+  gen = {
+    ...gen,
+    step: "plan2",
+    customerStage: customerStageFor("plan2", opts.gen.attempt),
+  };
+  await setGen(opts.runId, "planning", "plan2", gen, {
+    screen: opts.scr,
+    regulation_banner: opts.regulationBanner,
+  });
+
+  const pass1Json = JSON.stringify({
+    track: pass1Bundle.track,
+    day: {
+      ...pass1Bundle.day,
+      public: pass1Bundle.day.public,
+      characters: pass1Bundle.day.characters,
+      tasks: [],
+      triggers: [],
+      scoring: pass1Bundle.day.scoring,
+    },
+    ledger: pass1Bundle.ledger,
+    claims: pass1Bundle.claims,
+  });
+
+  const pass2 = await completeJson({
+    job: "plan",
+    purpose: "plan_pass2",
+    promptVersion: PLAN_PASS2_VERSION,
+    runId: opts.runId,
+    maxTokens: 16000,
+    messages: [
+      {
+        role: "user",
+        content: planPass2Prompt(
+          opts.scr,
+          opts.input,
+          opts.level,
+          pass1Json,
+        ),
+      },
+    ],
+    schema: looseBundle,
+  });
+
+  const bundle = normalize(coerceBundle(pass2.data), opts.level);
+  if (!bundle) {
+    throw new AiError(
+      "invalid_json",
+      "Pass 2 was not a valid full scenario.",
+    );
+  }
+
+  return {
+    bundle,
+    model: pass2.model,
+    gen: {
+      ...gen,
+      stage: { ...gen.stage, plan2: "ok" },
+      customerStage: customerStageFor("check", opts.gen.attempt),
+    },
+  };
+}
+
 export async function generateDay(runId: string): Promise<void> {
   const run = await getRun(runId);
   if (!run) throw new Error(`run ${runId} not found`);
 
   const level = run.level as LevelId;
   const input = run.inputText;
+  const userId = run.userId;
   let gen: GenProgress = {
     status: "running",
     step: "screen",
@@ -66,6 +290,7 @@ export async function generateDay(runId: string): Promise<void> {
     audit: null,
     err: null,
     stage: {},
+    customerStage: customerStageFor("screen", 0),
   };
 
   await setGen(runId, "screening", "screen", gen);
@@ -89,16 +314,30 @@ export async function generateDay(runId: string): Promise<void> {
       status: "failed",
       err: msg,
       structural: true,
+      customerStage: "Taking longer than usual",
     };
     await setGen(runId, "failed", "screen", gen);
+    await trackEvent(
+      "run_finished",
+      { ready: false, outcome: "failed", step: "screen" },
+      userId,
+    );
     return;
   }
 
   if (BLOCK_KW.test(scr.role_title || "") && scr.regulation === "none") {
     scr = { ...scr, regulation: "flag" };
   }
+  scr = {
+    ...scr,
+    employer_names: (scr.employer_names || []).filter(isProperEmployerName),
+  };
 
-  gen = { ...gen, stage: { ...gen.stage, screen: "ok" } };
+  gen = {
+    ...gen,
+    stage: { ...gen.stage, screen: "ok" },
+    customerStage: customerStageFor("role_minute", 0),
+  };
   await updateRun(runId, {
     payload: { screen: scr, gen },
   });
@@ -111,8 +350,14 @@ export async function generateDay(runId: string): Promise<void> {
       err:
         (scr.reason ? scr.reason + " " : "") +
         "Paste the job description text, or type a role such as 'Retail Store Manager'.",
+      customerStage: "Need a clearer job",
     };
     await setGen(runId, "failed", "screen", gen, { screen: scr });
+    await trackEvent(
+      "run_finished",
+      { ready: false, outcome: "blocked", reason: "not_a_job" },
+      userId,
+    );
     return;
   }
 
@@ -122,7 +367,32 @@ export async function generateDay(runId: string): Promise<void> {
       screen: scr,
       adjacent_roles: scr.adjacent_roles,
     });
+    await trackEvent(
+      "run_finished",
+      {
+        ready: false,
+        outcome: "blocked",
+        role_title: scr.role_title,
+        regulation: scr.regulation,
+      },
+      userId,
+    );
     return;
+  }
+
+  // Non-blocking wait activity for customers
+  let roleMinute: string | null = null;
+  try {
+    roleMinute = await completeText({
+      job: "screen",
+      purpose: "role_minute",
+      promptVersion: ROLE_MINUTE_PROMPT_VERSION,
+      runId,
+      maxTokens: 400,
+      messages: [{ role: "user", content: roleMinutePrompt(scr) }],
+    });
+  } catch {
+    roleMinute = null;
   }
 
   const regulationBanner =
@@ -136,31 +406,45 @@ export async function generateDay(runId: string): Promise<void> {
   let lastStructural = false;
   let garbled = 0;
   let lastModel = "";
+  // Silent recovery: fresh → repair → one more fresh (plus one JSON garbled retry)
+  const maxAttempts = 3;
 
-  for (let attempt = 1; attempt <= 2 + garbled; attempt++) {
-    const mode: "fresh" | "repair" =
-      attempt > 1 && lastBundle && !lastStructural ? "repair" : "fresh";
+  for (let attempt = 1; attempt <= maxAttempts + garbled; attempt++) {
+    // Ladder: fresh → repair (once) → fresh again
+    const useRepair =
+      attempt === 2 &&
+      Boolean(lastBundle) &&
+      !lastStructural &&
+      issues.length > 0;
 
     gen = {
       ...gen,
       attempt,
-      mode,
-      step: mode === "repair" ? "repair" : "plan",
+      mode: useRepair ? "repair" : "fresh",
+      step: useRepair ? "repair" : "plan",
       checks: [],
       audit: null,
       err: null,
+      customerStage: customerStageFor(
+        useRepair ? "repair" : "plan",
+        attempt,
+      ),
     };
     await setGen(
       runId,
-      mode === "repair" ? "repairing" : "planning",
+      useRepair ? "repairing" : "planning",
       gen.step,
       gen,
-      { screen: scr, regulation_banner: regulationBanner },
+      {
+        screen: scr,
+        regulation_banner: regulationBanner,
+        role_minute: roleMinute,
+      },
     );
 
     let bundle: ScenarioBundle | null = null;
     try {
-      if (mode === "repair" && lastBundle && issues.length) {
+      if (useRepair && lastBundle && issues.length) {
         const { data, model } = await completeJson({
           job: "repair",
           purpose: "repair",
@@ -178,28 +462,39 @@ export async function generateDay(runId: string): Promise<void> {
         lastModel = model;
         bundle = normalize(coerceBundle(data), level);
       } else {
-        // Single-shot plan (prototype path) — faster and less truncation than 2-pass+fallback
-        const full = await completeJson({
-          job: "plan",
-          purpose: "plan",
-          promptVersion: PLAN_PROMPT_VERSION,
+        const planned = await planTwoPass({
           runId,
-          maxTokens: 16000,
-          messages: [
-            {
-              role: "user",
-              content: planPrompt(
-                scr,
-                input,
-                level,
-                issues.length ? issues : null,
-              ),
-            },
-          ],
-          schema: looseBundle,
+          scr,
+          input,
+          level,
+          gen,
+          regulationBanner,
+          issues: issues.length ? issues : null,
         });
-        lastModel = full.model;
-        bundle = normalize(coerceBundle(full.data), level);
+        gen = planned.gen;
+        lastModel = planned.model;
+        if (planned.pass1Failed?.length) {
+          lastBundle = planned.bundle;
+          lastStructural = true;
+          issues = planned.pass1Failed;
+          if (attempt >= maxAttempts + garbled) {
+            await failOrShelf({
+              runId,
+              userId,
+              level,
+              scr,
+              gen,
+              regulationBanner,
+              roleMinute,
+              err: "Checks still failing after recovery.",
+              structural: true,
+              step: "plan",
+            });
+            return;
+          }
+          continue;
+        }
+        bundle = planned.bundle;
       }
     } catch (e) {
       if (e instanceof AiError && e.code === "invalid_json") {
@@ -211,22 +506,32 @@ export async function generateDay(runId: string): Promise<void> {
           ];
           continue;
         }
-        gen = {
-          ...gen,
-          status: "failed",
+        await failOrShelf({
+          runId,
+          userId,
+          level,
+          scr,
+          gen,
+          regulationBanner,
+          roleMinute,
           err: "The AI's answer came back garbled twice. Try again; shorter job posts help.",
           structural: true,
-        };
-        await setGen(runId, "failed", "plan", gen, { screen: scr });
+          step: "plan",
+        });
         return;
       }
-      gen = {
-        ...gen,
-        status: "failed",
+      await failOrShelf({
+        runId,
+        userId,
+        level,
+        scr,
+        gen,
+        regulationBanner,
+        roleMinute,
         err: e instanceof AiError ? e.message : copyFor("refused"),
         structural: true,
-      };
-      await setGen(runId, "failed", "plan", gen, { screen: scr });
+        step: "plan",
+      });
       return;
     }
 
@@ -238,10 +543,15 @@ export async function generateDay(runId: string): Promise<void> {
       continue;
     }
 
-    gen = { ...gen, step: "check" };
+    gen = {
+      ...gen,
+      step: "check",
+      customerStage: customerStageFor("check", attempt),
+    };
     await setGen(runId, "checking", "check", gen, {
       screen: scr,
       regulation_banner: regulationBanner,
+      role_minute: roleMinute,
     });
 
     const checks = codeChecks(bundle, level, scr);
@@ -274,7 +584,7 @@ export async function generateDay(runId: string): Promise<void> {
     const passed =
       !structural &&
       codeFails.length === 0 &&
-      (audit?.ok !== false) &&
+      audit?.ok !== false &&
       majorIssues.length === 0;
 
     gen = {
@@ -289,22 +599,54 @@ export async function generateDay(runId: string): Promise<void> {
     await insertPlan({
       runId,
       attempt,
-      mode,
+      mode: useRepair ? "repair" : "fresh",
       bundle,
       checks,
       audit,
       passed,
-      promptVersion: PLAN_PROMPT_VERSION,
+      promptVersion: useRepair
+        ? REPAIR_PROMPT_VERSION
+        : PLAN_PROMPT_VERSION,
       model: lastModel,
     });
 
+    await trackEvent(
+      "plan_checked",
+      {
+        attempt,
+        mode: useRepair ? "repair" : "fresh",
+        passed,
+        failing: codeFails.slice(0, 8),
+        role_title: scr.role_title,
+        level,
+      },
+      userId,
+    );
+
     if (passed) {
-      gen = { ...gen, status: "done", step: "ready" };
+      gen = {
+        ...gen,
+        status: "done",
+        step: "ready",
+        customerStage: "Ready",
+      };
       await setGen(runId, "ready", "ready", gen, {
         screen: scr,
         regulation_banner: regulationBanner,
+        role_minute: roleMinute,
         summary: publicReadySummary(bundle),
       });
+      await trackEvent(
+        "run_finished",
+        {
+          ready: true,
+          outcome: "ready",
+          role_title: scr.role_title,
+          level,
+          attempt,
+        },
+        userId,
+      );
       return;
     }
 
@@ -314,16 +656,23 @@ export async function generateDay(runId: string): Promise<void> {
       ? allIssues
       : ["Quality checks failed; fix format, numbers, brands or wiring."];
 
-    if (attempt >= 2 + garbled) {
-      gen = {
-        ...gen,
-        status: "failed",
-        err: "Checks still failing after one repair.",
+    // Structural break → skip repair, go straight to fresh on next loop
+    if (structural) {
+      lastBundle = null;
+    }
+
+    if (attempt >= maxAttempts + garbled) {
+      await failOrShelf({
+        runId,
+        userId,
+        level,
+        scr,
+        gen,
+        regulationBanner,
+        roleMinute,
+        err: "Checks still failing after recovery.",
         structural,
-      };
-      await setGen(runId, "failed", "check", gen, {
-        screen: scr,
-        regulation_banner: regulationBanner,
+        step: "check",
       });
       return;
     }

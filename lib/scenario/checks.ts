@@ -442,8 +442,9 @@ export function codeChecks(
   });
   (scr?.employer_names || []).forEach((n) => {
     const name = String(n || "").trim();
+    // Skip industry phrases / generics the screener sometimes returns
+    if (!isProperEmployerName(name)) return;
     if (
-      name.length >= 3 &&
       new RegExp(`(?<![A-Za-z0-9])${reEsc(name)}(?![A-Za-z0-9])`, "i").test(
         text,
       )
@@ -483,6 +484,25 @@ export function codeChecks(
   return out;
 }
 
+/** Real employer/brand tokens only — not "food delivery app" style phrases. */
+export function isProperEmployerName(name: string): boolean {
+  const n = name.trim();
+  if (n.length < 3 || n.length > 40) return false;
+  if (/\s{2,}/.test(n)) return false;
+  const words = n.split(/\s+/);
+  if (words.length > 3) return false;
+  // All-lowercase multi-word industry blurb
+  if (words.length >= 2 && n === n.toLowerCase()) return false;
+  if (
+    /\b(app|industry|sector|company|role|job|manager|executive|analyst|support|nurse|doctor|intern)\b/i.test(
+      n,
+    ) &&
+    words.length >= 2
+  )
+    return false;
+  return true;
+}
+
 export function hasStructuralFail(checks: CheckResult[]): boolean {
   return checks.slice(0, 3).some((c) => c.status === "fail");
 }
@@ -491,4 +511,103 @@ export function failingReasons(checks: CheckResult[]): string[] {
   return checks
     .filter((c) => c.status === "fail")
     .flatMap((c) => c.errs);
+}
+
+/**
+ * Pass-1 core checks: company/cast/hidden facts, ledger+claims, brands.
+ * Skips inbox, tasks, triggers and expected_answers (filled in Pass 2).
+ */
+export function codeChecksPass1(
+  b: ScenarioBundle,
+  level: LevelId,
+  scr: ScreenResult | null,
+): CheckResult[] {
+  const full = codeChecks(b, level, scr);
+  const keep = new Set([
+    "Boss and", // prefix — cast check name varies by colleague count
+    "Numbers and conclusions add up",
+    "No real brands",
+  ]);
+  const castName = full.find((c) => c.name.startsWith("Boss and"));
+  const numbers = full.find((c) => c.name === "Numbers and conclusions add up");
+  const brands = full.find((c) => c.name === "No real brands");
+
+  const out: CheckResult[] = [];
+  const add = (
+    name: string,
+    errs: string[],
+    warns: string[],
+    okText: string,
+  ) =>
+    out.push({
+      name,
+      status: errs.length ? "fail" : warns.length ? "warn" : "pass",
+      detail: errs.length
+        ? errs.slice(0, 4).join("; ")
+        : warns.length
+          ? warns.slice(0, 3).join("; ")
+          : okText,
+      errs,
+      warns,
+    });
+
+  const t = b.track;
+  const d = b.day;
+  let e: string[] = [];
+  let w: string[] = [];
+  for (const k of [
+    "title",
+    "theme",
+    "story_so_far",
+    "world_today",
+    "canon_after_day",
+  ] as const) {
+    if (!d[k]) e.push(`day.${k} missing`);
+  }
+  if (
+    !t.company ||
+    !t.company.name ||
+    !t.company.world_briefing ||
+    !t.company.one_liner
+  )
+    e.push("track.company incomplete");
+  if (!t.role) e.push("track.role missing");
+  if (t.skills.length !== 6)
+    e.push(`needs 6 skills, has ${t.skills.length}`);
+  add("Pass 1 core fields", e, w, "company, story and skills present");
+
+  if (castName) out.push(castName);
+  // Numbers: drop dashboard-ledger warn noise when dashboard is empty in pass 1
+  if (numbers) {
+    const warns = numbers.warns.filter(
+      (x) => !/dashboard figures are tracked/.test(x),
+    );
+    out.push({
+      ...numbers,
+      warns,
+      status: numbers.errs.length
+        ? "fail"
+        : warns.length
+          ? "warn"
+          : "pass",
+      detail: numbers.errs.length
+        ? numbers.errs.slice(0, 4).join("; ")
+        : warns.length
+          ? warns.slice(0, 3).join("; ")
+          : numbers.detail,
+    });
+  }
+  if (brands) out.push(brands);
+
+  void keep;
+  return out;
+}
+
+/** Structural fail for Pass 1: core fields or cast broken. */
+export function hasPass1StructuralFail(checks: CheckResult[]): boolean {
+  return checks
+    .filter((c) =>
+      c.name === "Pass 1 core fields" || c.name.startsWith("Boss and"),
+    )
+    .some((c) => c.status === "fail");
 }

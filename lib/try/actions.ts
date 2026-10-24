@@ -60,14 +60,22 @@ export function applyPlayerMessage(
   bundle: ScenarioBundle,
   to: string,
   text: string,
+  images?: string[],
 ): { ok: true } | { ok: false; error: string } {
-  const trimmed = text.trim();
+  const imgs = (images || []).filter(
+    (u) => typeof u === "string" && u.startsWith("data:image/"),
+  ).slice(0, 2);
+  const trimmed = text.trim() || (imgs.length ? "(see screenshot)" : "");
   if (!trimmed) return { ok: false, error: "Empty message" };
   const lock = chatLockReason(state, bundle, to);
   if (lock) return { ok: false, error: lock };
 
   goView(state, `chat:${to}`);
-  pushMessage(state, to, { f: "me", t: trimmed });
+  pushMessage(state, to, {
+    f: "me",
+    t: trimmed,
+    imgs: imgs.length ? imgs : undefined,
+  });
   state.counters[`${to}.messages`] =
     (state.counters[`${to}.messages`] || 0) + 1;
   delete state.drafts[to];

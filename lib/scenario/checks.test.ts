@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { codeChecks } from "./checks";
+import { codeChecks, codeChecksPass1, isProperEmployerName } from "./checks";
 import { normalize } from "./normalize";
 import type { ScenarioBundle } from "./schema";
 
@@ -89,5 +89,37 @@ describe("codeChecks", () => {
     expect(fails.some((n) => n.includes("tasks") || n.includes("twist"))).toBe(
       true,
     );
+  });
+});
+
+describe("isProperEmployerName", () => {
+  it("accepts real-looking names and rejects industry blurbs", () => {
+    expect(isProperEmployerName("Flipkart")).toBe(true);
+    expect(isProperEmployerName("Swiggy")).toBe(true);
+    expect(isProperEmployerName("food delivery app")).toBe(false);
+    expect(isProperEmployerName("Customer Support")).toBe(false);
+  });
+});
+
+describe("codeChecksPass1", () => {
+  it("passes a Pass-1 core (empty inbox/tasks) built from the Zippy example", () => {
+    const b = clone(loadExample());
+    b.day.public = {
+      inbox: [],
+      dashboard: { title: "", subtitle: "", columns: [], rows: [], notes: [] },
+      reviews: [],
+      documents: [],
+    };
+    b.day.tasks = [];
+    b.day.triggers = [];
+    b.day.scoring = {
+      strong_player: "",
+      expected_answers: {},
+      common_mistakes: [],
+      senior_view: "",
+      drill: "",
+    };
+    const checks = codeChecksPass1(b, "medium", null);
+    expect(checks.every((c) => c.status !== "fail")).toBe(true);
   });
 });

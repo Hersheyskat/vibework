@@ -21,7 +21,7 @@ export function TryShell({
         <Link href="/" className="logo">
           vibe<span>work</span> <span className="trytag">TRY</span>
         </Link>
-        <div className="role">{roleBar}</div>
+        <div className="role max-[900px]:hidden">{roleBar}</div>
         <div className="hdr-r">{headerRight}</div>
       </header>
       {rail}

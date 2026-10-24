@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { openRouterConfigured } from "@/lib/ai/client";
+import { trackEvent } from "@/lib/analytics/track";
 import { hasDbAccess } from "@/lib/db";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -12,7 +13,7 @@ import { drainReplyQueue } from "@/lib/try/reply";
 import {
   loadOwnedGame,
   persistState,
-  publicPayload,
+  publicPayloadAsync,
 } from "@/lib/try/load-game";
 
 const bodySchema = z.object({
@@ -61,13 +62,13 @@ export async function POST(
   if (parsed.data.startRevise) {
     setRevising(loaded.row.state, parsed.data.taskId, true);
     await persistState(id, loaded.row.state);
-    return NextResponse.json(publicPayload(loaded));
+    return NextResponse.json(await publicPayloadAsync(loaded));
   }
   if (parsed.data.cancelRevise) {
     setRevising(loaded.row.state, parsed.data.taskId, false);
     delete loaded.row.state.tdraft[parsed.data.taskId];
     await persistState(id, loaded.row.state);
-    return NextResponse.json(publicPayload(loaded));
+    return NextResponse.json(await publicPayloadAsync(loaded));
   }
 
   if (!openRouterConfigured()) {
@@ -113,5 +114,19 @@ export async function POST(
   }
 
   await persistState(id, loaded.row.state);
-  return NextResponse.json(publicPayload(loaded));
+
+  const rev =
+    (loaded.row.state.subHist[parsed.data.taskId] || []).length;
+  await trackEvent(
+    "task_submitted",
+    {
+      gameId: id,
+      taskId: parsed.data.taskId,
+      revision: rev,
+      revise: Boolean(parsed.data.revise),
+    },
+    user.id,
+  );
+
+  return NextResponse.json(await publicPayloadAsync(loaded));
 }

@@ -4,6 +4,50 @@ import { normalize } from "./normalize";
 import { codeChecks } from "./checks";
 
 describe("coerceBundle", () => {
+  it("pads dashboard cells and drops broken clock steps", () => {
+    const coerced = coerceBundle({
+      track: { cast: [] },
+      day: {
+        public: {
+          dashboard: {
+            columns: ["M", "A", "B", "T"],
+            rows: [
+              { cells: ["x", "1"] },
+              ["y", "1", "2", "3", "extra"],
+            ],
+          },
+        },
+        clock: {
+          steps: [
+            { time: "11:30" },
+            { time: "13:00", when: { submitted: "t1" } },
+            { time: "bad", when: { submitted: "t2" } },
+          ],
+        },
+      },
+      ledger: [],
+      claims: [],
+    }) as {
+      day: {
+        public: { dashboard: { rows: { cells: string[] }[] } };
+        clock: { steps: { time: string }[] };
+      };
+    };
+    expect(coerced.day.public.dashboard.rows[0]!.cells).toEqual([
+      "x",
+      "1",
+      "—",
+      "—",
+    ]);
+    expect(coerced.day.public.dashboard.rows[1]!.cells).toEqual([
+      "y",
+      "1",
+      "2",
+      "3",
+    ]);
+    expect(coerced.day.clock.steps.map((s) => s.time)).toEqual(["13:00"]);
+  });
+
   it("lifts day.inbox into day.public.inbox and seeds characters from cast", () => {
     const raw = {
       track: {

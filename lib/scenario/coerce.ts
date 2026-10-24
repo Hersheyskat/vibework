@@ -83,7 +83,76 @@ export function coerceBundle(raw: unknown): unknown {
     delete day.expected_answers;
   }
 
+  coerceDashboard(pub);
+  coerceClock(day);
+
   return b;
+}
+
+/** Pad/trim row cells; accept bare arrays as rows. */
+function coerceDashboard(pub: Record<string, unknown>) {
+  const db = asObj(pub.dashboard);
+  pub.dashboard = db;
+  const columns = Array.isArray(db.columns)
+    ? (db.columns as unknown[]).map(String)
+    : [];
+  db.columns = columns;
+  const n = columns.length;
+  const rawRows = Array.isArray(db.rows) ? db.rows : [];
+  db.rows = rawRows.map((r) => {
+    if (Array.isArray(r)) {
+      const cells = r.map((c) => String(c ?? ""));
+      while (n > 0 && cells.length < n) cells.push("—");
+      return { cells: n > 0 ? cells.slice(0, n) : cells };
+    }
+    const row = asObj(r);
+    let cells = Array.isArray(row.cells)
+      ? (row.cells as unknown[]).map((c) => String(c ?? ""))
+      : [];
+    if (!cells.length && n > 0) {
+      // { Metric: "...", Bengaluru: "1", ... } keyed by column
+      cells = columns.map((col) => String(row[col] ?? row[col.toLowerCase()] ?? "—"));
+    }
+    if (n > 0) {
+      while (cells.length < n) cells.push("—");
+      cells = cells.slice(0, n);
+    }
+    const out: Record<string, unknown> = { cells };
+    if (row.miss === true) out.miss = true;
+    return out;
+  });
+}
+
+/** Normalise clock.steps: {time, when} | {time, condition} | ["11:30", cond]. */
+function coerceClock(day: Record<string, unknown>) {
+  const clock = asObj(day.clock);
+  day.clock = clock;
+  if (!clock.start) clock.start = "09:00";
+  if (!clock.end) clock.end = "17:30";
+  const raw = Array.isArray(clock.steps) ? clock.steps : [];
+  clock.steps = raw
+    .map((s) => {
+      if (Array.isArray(s) && s.length >= 2) {
+        return { time: String(s[0]), when: s[1] };
+      }
+      const step = asObj(s);
+      const time = String(step.time ?? step.at ?? step.clock ?? "").trim();
+      let when = step.when ?? step.condition ?? step.if ?? null;
+      if (typeof when === "string") {
+        const tid = when.match(/\b(t[1-4])\b/i)?.[1]?.toLowerCase();
+        if (/submit/i.test(when) && tid) when = { submitted: tid };
+        else if (/pull|data/i.test(when)) {
+          const who = when.match(/([a-z0-9_-]+)\.data_pulls/i)?.[1];
+          when = who
+            ? { counter_at_least: { counter: `${who}.data_pulls`, value: 1 } }
+            : null;
+        } else when = null;
+      }
+      if (!/^\d{1,2}:\d{2}$/.test(time) || !when || typeof when !== "object")
+        return null;
+      return { time, when };
+    })
+    .filter(Boolean);
 }
 
 function asObj(v: unknown): Record<string, unknown> {

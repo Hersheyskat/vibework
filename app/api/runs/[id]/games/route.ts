@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { trackEvent } from "@/lib/analytics/track";
 import { hasDbAccess } from "@/lib/db";
 import { getRunForUser } from "@/lib/db/runs";
 import { createClient } from "@/lib/supabase/server";
@@ -41,5 +42,10 @@ export async function POST(
       { status: result.status },
     );
   }
+  await trackEvent(
+    "day_started",
+    { runId, gameId: result.gameId, level: run.level },
+    user.id,
+  );
   return NextResponse.json({ gameId: result.gameId });
 }

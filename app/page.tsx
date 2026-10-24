@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { TryShell } from "@/components/try/TryShell";
 import { SetupScreen } from "@/components/try/SetupScreen";
 import { HeaderAccount } from "@/components/try/HeaderAccount";
-import { createClient } from "@/lib/supabase/server";
+import { getHeaderSession } from "@/lib/auth/header-session";
 
 export default function HomePage() {
   return (
@@ -31,29 +31,17 @@ export default function HomePage() {
 }
 
 async function HeaderAccountSlot() {
-  const { signedIn, label } = await getSessionLabel();
-  return <HeaderAccount signedIn={signedIn} label={label} />;
+  const s = await getHeaderSession();
+  return (
+    <HeaderAccount
+      signedIn={s.signedIn}
+      label={s.label}
+      isAdmin={s.isAdmin}
+    />
+  );
 }
 
 async function HomeBody() {
-  const { signedIn, label } = await getSessionLabel();
-  return <SetupScreen signedIn={signedIn} learnerLabel={label} />;
-}
-
-async function getSessionLabel() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const meta = user?.user_metadata ?? {};
-  const learnerName =
-    (typeof meta.full_name === "string" && meta.full_name) ||
-    (typeof meta.name === "string" && meta.name) ||
-    null;
-  const email = user?.email ?? null;
-  return {
-    signedIn: Boolean(user),
-    label: learnerName || email,
-  };
+  const s = await getHeaderSession();
+  return <SetupScreen signedIn={s.signedIn} learnerLabel={s.label} />;
 }
